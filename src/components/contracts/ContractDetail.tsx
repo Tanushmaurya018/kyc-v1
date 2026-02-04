@@ -82,8 +82,11 @@ function TimelineEvent({ event }: { event: ContractEvent }) {
   );
 }
 
-// Document preview placeholder component
-function DocumentPreview({ documentName, isSigned }: { documentName: string; isSigned?: boolean }) {
+// Sample PDF URL for demo - using Mozilla's sample PDF
+const SAMPLE_PDF_URL = 'https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf';
+
+// Document preview component with actual PDF embed
+function DocumentPreview({ documentName, isSigned, pageCount = 1 }: { documentName: string; isSigned?: boolean; pageCount?: number }) {
   return (
     <div className="border border-gray-200 rounded-lg bg-gray-50 overflow-hidden">
       {/* Document header */}
@@ -100,61 +103,48 @@ function DocumentPreview({ documentName, isSigned }: { documentName: string; isS
         )}
       </div>
       
-      {/* Document preview area - placeholder */}
-      <div className="aspect-[8.5/11] max-h-[600px] bg-white m-4 rounded border border-gray-200 shadow-sm overflow-hidden">
-        {/* Simulated PDF pages */}
-        <div className="h-full flex flex-col p-6">
-          {/* Header */}
-          <div className="border-b pb-4 mb-4">
-            <div className="h-6 bg-gray-200 rounded w-3/4 mb-2" />
-            <div className="h-4 bg-gray-100 rounded w-1/2" />
+      {/* PDF Embed */}
+      <div className="relative bg-white">
+        <object
+          data={`${SAMPLE_PDF_URL}#toolbar=0&navpanes=0&scrollbar=0`}
+          type="application/pdf"
+          className="w-full h-[600px]"
+        >
+          {/* Fallback for browsers that don't support PDF embed */}
+          <div className="w-full h-[600px] flex flex-col items-center justify-center bg-gray-50 p-8">
+            <FileText className="h-16 w-16 text-gray-300 mb-4" />
+            <p className="text-gray-500 text-center mb-4">
+              PDF preview not available in this browser.
+            </p>
+            <a 
+              href={SAMPLE_PDF_URL} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline text-sm"
+            >
+              Open PDF in new tab →
+            </a>
           </div>
-          
-          {/* Content lines */}
-          <div className="space-y-3 flex-1">
-            <div className="h-3 bg-gray-100 rounded w-full" />
-            <div className="h-3 bg-gray-100 rounded w-full" />
-            <div className="h-3 bg-gray-100 rounded w-5/6" />
-            <div className="h-3 bg-gray-100 rounded w-full" />
-            <div className="h-3 bg-gray-100 rounded w-4/5" />
-            <div className="h-6" />
-            <div className="h-3 bg-gray-100 rounded w-full" />
-            <div className="h-3 bg-gray-100 rounded w-full" />
-            <div className="h-3 bg-gray-100 rounded w-3/4" />
-            <div className="h-6" />
-            <div className="h-3 bg-gray-100 rounded w-full" />
-            <div className="h-3 bg-gray-100 rounded w-5/6" />
-            <div className="h-3 bg-gray-100 rounded w-full" />
-            <div className="h-3 bg-gray-100 rounded w-2/3" />
-          </div>
-          
-          {/* Signature area */}
-          {isSigned && (
-            <div className="mt-auto pt-4 border-t">
-              <div className="flex items-end justify-between">
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Digitally Signed</p>
-                  <div className="border-2 border-green-500 rounded px-4 py-2 bg-green-50">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-600" />
-                      <span className="text-sm font-medium text-green-700">Verified Signature</span>
-                    </div>
-                    <p className="text-xs text-green-600 mt-1">Face ID authenticated</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-gray-400">Date</p>
-                  <p className="text-sm">Feb 4, 2026</p>
-                </div>
+        </object>
+        
+        {/* Signed overlay indicator */}
+        {isSigned && (
+          <div className="absolute bottom-4 right-4 bg-green-50 border-2 border-green-500 rounded-lg px-4 py-3 shadow-lg">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="text-sm font-semibold text-green-700">Digitally Signed</p>
+                <p className="text-xs text-green-600">Face ID Verified • Feb 4, 2026</p>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
       
       {/* Page indicator */}
-      <div className="bg-white border-t border-gray-200 px-4 py-2 text-center">
-        <span className="text-xs text-gray-500">Page 1 of 1 (Preview)</span>
+      <div className="bg-white border-t border-gray-200 px-4 py-2 flex items-center justify-between">
+        <span className="text-xs text-gray-500">{pageCount} page{pageCount > 1 ? 's' : ''}</span>
+        <span className="text-xs text-gray-400">Sample PDF for demonstration</span>
       </div>
     </div>
   );
@@ -239,14 +229,21 @@ export function ContractDetail({ contract, basePath = '/dash', showOrg }: Contra
                     <DocumentPreview 
                       documentName={contract.documentName.replace('.pdf', '_signed.pdf')} 
                       isSigned 
+                      pageCount={contract.pageCount}
                     />
                   </TabsContent>
                   <TabsContent value="original">
-                    <DocumentPreview documentName={contract.documentName} />
+                    <DocumentPreview 
+                      documentName={contract.documentName} 
+                      pageCount={contract.pageCount}
+                    />
                   </TabsContent>
                 </Tabs>
               ) : (
-                <DocumentPreview documentName={contract.documentName} />
+                <DocumentPreview 
+                  documentName={contract.documentName} 
+                  pageCount={contract.pageCount}
+                />
               )}
             </CardContent>
           </Card>
