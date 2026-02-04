@@ -1,0 +1,301 @@
+import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  getPaginationRowModel,
+  flexRender,
+  type ColumnDef,
+  type SortingState,
+} from '@tanstack/react-table';
+import { format } from 'date-fns';
+import { ArrowUpDown, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Button,
+  Skeleton,
+} from '@/components/ui';
+import { StatusBadge } from './StatusBadge';
+import { organizations } from '@/data';
+import type { Contract, ContractFilters } from '@/types';
+import { cn } from '@/lib/utils';
+
+interface ContractsTableProps {
+  contracts: Contract[];
+  isLoading?: boolean;
+  filters: ContractFilters;
+  basePath?: string;
+  showOrg?: boolean;
+}
+
+export function ContractsTable({ contracts, isLoading, filters, basePath = '/dash', showOrg }: ContractsTableProps) {
+  const navigate = useNavigate();
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'createdAt', desc: true }
+  ]);
+
+  const columns = useMemo<ColumnDef<Contract>[]>(() => {
+    const baseColumns: ColumnDef<Contract>[] = [
+      {
+        accessorKey: 'sessionId',
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            className="h-auto p-0 font-medium hover:bg-transparent"
+          >
+            Session ID
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <span className="font-mono text-sm">{row.getValue('sessionId')}</span>
+        ),
+      },
+      {
+        accessorKey: 'documentName',
+        header: 'Document',
+        cell: ({ row }) => (
+          <div className="max-w-[200px]">
+            <span className="truncate block" title={row.getValue('documentName')}>
+              {row.getValue('documentName')}
+            </span>
+          </div>
+        ),
+      },
+    ];
+
+    if (showOrg) {
+      baseColumns.push({
+        accessorKey: 'orgId',
+        header: 'Organization',
+        cell: ({ row }) => {
+          const org = organizations.find(o => o.id === row.getValue('orgId'));
+          return <span className="text-sm">{org?.name || 'Unknown'}</span>;
+        },
+      });
+    }
+
+    baseColumns.push(
+      {
+        accessorKey: 'signerName',
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            className="h-auto p-0 font-medium hover:bg-transparent"
+          >
+            Signer
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <div>
+            <p className="font-medium">{row.getValue('signerName')}</p>
+            <p className="text-xs text-gray-500">{row.original.signerIdType.replace('_', ' ')}</p>
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status',
+        cell: ({ row }) => <StatusBadge status={row.getValue('status')} />,
+        filterFn: (row, id, filterValue: string[]) => {
+          if (!filterValue || filterValue.length === 0) return true;
+          return filterValue.includes(row.getValue(id));
+        },
+      },
+      {
+        accessorKey: 'createdAt',
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            className="h-auto p-0 font-medium hover:bg-transparent"
+          >
+            Created
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <span className="text-sm text-gray-600">
+            {format(row.getValue('createdAt'), 'MMM d, yyyy HH:mm')}
+          </span>
+        ),
+      },
+      {
+        id: 'expiresOrCompleted',
+        header: 'Expires/Completed',
+        cell: ({ row }) => {
+          const contract = row.original;
+          if (contract.completedAt) {
+            return (
+              <span className="text-sm text-green-600">
+                {format(contract.completedAt, 'MMM d, yyyy HH:mm')}
+              </span>
+            );
+          }
+          const isExpired = new Date(contract.expiresAt) < new Date();
+          return (
+            <span className={cn("text-sm", isExpired ? "text-red-600" : "text-gray-600")}>
+              {format(contract.expiresAt, 'MMM d, yyyy HH:mm')}
+            </span>
+          );
+        },
+      },
+      {
+        id: 'actions',
+        header: '',
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2 justify-end">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(`${basePath}/contracts/${row.original.id}`)}
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+          </div>
+        ),
+      }
+    );
+
+    return baseColumns;
+  }, [navigate, basePath, showOrg]);
+
+  // Apply filters
+  const filteredContracts = useMemo(() => {
+    let result = contracts;
+    
+    if (filters.status && filters.status.length > 0) {
+      result = result.filter(c => filters.status!.includes(c.status));
+    }
+    
+    if (filters.search) {
+      const search = filters.search.toLowerCase();
+      result = result.filter(c => 
+        c.sessionId.toLowerCase().includes(search) ||
+        c.signerName.toLowerCase().includes(search) ||
+        c.documentName.toLowerCase().includes(search)
+      );
+    }
+    
+    return result;
+  }, [contracts, filters]);
+
+  const table = useReactTable({
+    data: filteredContracts,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: { pageSize: 25 },
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {[...Array(10)].map((_, i) => (
+          <div key={i} className="flex items-center gap-4">
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-40" />
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-20" />
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (filteredContracts.length === 0) {
+    return (
+      <div className="text-center py-12 border border-gray-200">
+        <p className="text-gray-500 mb-2">No contracts found</p>
+        <p className="text-sm text-gray-400">
+          {filters.search || filters.status ? 'Try adjusting your filters' : 'Contracts will appear here once created'}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="border border-gray-200">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className="bg-gray-50">
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                className="cursor-pointer"
+                onClick={() => navigate(`${basePath}/contracts/${row.original.id}`)}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between mt-4">
+        <p className="text-sm text-gray-500">
+          Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{' '}
+          {Math.min(
+            (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+            filteredContracts.length
+          )}{' '}
+          of {filteredContracts.length} results
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
