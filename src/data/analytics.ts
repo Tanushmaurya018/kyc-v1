@@ -1,4 +1,4 @@
-import type { AnalyticsData, DailyStats } from '@/types';
+import type { AnalyticsData, DailyStats, DropOffAnalytics } from '@/types';
 import { contracts } from './contracts';
 import { format, subDays, startOfDay, isWithinInterval } from 'date-fns';
 
@@ -29,6 +29,70 @@ function generateDailyStats(days: number, orgId?: string): DailyStats[] {
   }
 
   return stats;
+}
+
+// Generate drop-off funnel analytics
+function generateDropOffAnalytics(orgId?: string): DropOffAnalytics {
+  const filteredContracts = orgId 
+    ? contracts.filter(c => c.orgId === orgId)
+    : contracts;
+
+  const total = filteredContracts.length;
+  
+  // Simulated funnel steps based on Face Sign flow
+  // Each step represents where users might drop off
+  const linkOpened = total;
+  const documentViewed = Math.round(total * 0.92); // 92% view document
+  const kycStarted = Math.round(total * 0.85); // 85% start KYC
+  const kycCompleted = Math.round(total * 0.78); // 78% complete KYC (some fail)
+  const signatureStarted = Math.round(total * 0.72); // 72% start signing
+  const signatureCompleted = filteredContracts.filter(c => c.status === 'SIGNED').length;
+
+  const steps = [
+    {
+      name: 'Link Opened',
+      count: linkOpened,
+      percentage: 100,
+      dropOff: 0,
+    },
+    {
+      name: 'Document Viewed',
+      count: documentViewed,
+      percentage: total > 0 ? Math.round((documentViewed / total) * 100) : 0,
+      dropOff: linkOpened - documentViewed,
+    },
+    {
+      name: 'KYC Started',
+      count: kycStarted,
+      percentage: total > 0 ? Math.round((kycStarted / total) * 100) : 0,
+      dropOff: documentViewed - kycStarted,
+    },
+    {
+      name: 'KYC Completed',
+      count: kycCompleted,
+      percentage: total > 0 ? Math.round((kycCompleted / total) * 100) : 0,
+      dropOff: kycStarted - kycCompleted,
+    },
+    {
+      name: 'Signature Started',
+      count: signatureStarted,
+      percentage: total > 0 ? Math.round((signatureStarted / total) * 100) : 0,
+      dropOff: kycCompleted - signatureStarted,
+    },
+    {
+      name: 'Signed',
+      count: signatureCompleted,
+      percentage: total > 0 ? Math.round((signatureCompleted / total) * 100) : 0,
+      dropOff: signatureStarted - signatureCompleted,
+    },
+  ];
+
+  return {
+    steps,
+    totalStarted: total,
+    totalCompleted: signatureCompleted,
+    overallCompletionRate: total > 0 ? signatureCompleted / total : 0,
+  };
 }
 
 function calculateAnalytics(orgId?: string): AnalyticsData {
@@ -101,6 +165,7 @@ function calculateAnalytics(orgId?: string): AnalyticsData {
     signedChange: 0.08, // Mock: 8% increase
     rejectedChange: -0.05, // Mock: 5% decrease
     topDocuments,
+    dropOff: generateDropOffAnalytics(orgId),
   };
 }
 

@@ -16,6 +16,7 @@ import {
 } from '@/components/ui';
 import { Button, Input, Label } from '@/components/ui';
 import type { UserRole } from '@/types';
+import { roleLabels } from '@/types/user';
 
 interface UserFormProps {
   open: boolean;
@@ -25,13 +26,13 @@ interface UserFormProps {
 
 export function UserForm({ open, onOpenChange, onSubmit }: UserFormProps) {
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<UserRole>('VIEWER');
+  const [role, setRole] = useState<UserRole>('USER');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({ email, role });
     setEmail('');
-    setRole('VIEWER');
+    setRole('USER');
     onOpenChange(false);
   };
 
@@ -66,15 +67,13 @@ export function UserForm({ open, onOpenChange, onSubmit }: UserFormProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ADMIN">Admin</SelectItem>
-                <SelectItem value="MANAGER">Manager</SelectItem>
-                <SelectItem value="VIEWER">Viewer</SelectItem>
+                <SelectItem value="ADMIN">{roleLabels.ADMIN}</SelectItem>
+                <SelectItem value="USER">{roleLabels.USER}</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-gray-500 mt-1">
-              {role === 'ADMIN' && 'Full access to all features including billing and user management'}
-              {role === 'MANAGER' && 'Can view contracts, export data, and manage settings'}
-              {role === 'VIEWER' && 'Can only view contracts'}
+              {role === 'ADMIN' && 'Full access to contracts, API keys, billing, and settings'}
+              {role === 'USER' && 'View-only access to contracts'}
             </p>
           </div>
 

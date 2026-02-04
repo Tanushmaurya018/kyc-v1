@@ -19,6 +19,7 @@ import {
   Skeleton,
 } from '@/components/ui';
 import type { User } from '@/types';
+import { roleLabels } from '@/types/user';
 
 interface UsersTableProps {
   users: User[];
@@ -85,7 +86,7 @@ export function UsersTable({ users, isLoading, onEdit, onDisable, onRemove, read
                 </div>
               </TableCell>
               <TableCell>
-                <Badge variant="secondary">{user.role}</Badge>
+                <Badge variant="secondary">{roleLabels[user.role]}</Badge>
               </TableCell>
               <TableCell>
                 <Badge variant={

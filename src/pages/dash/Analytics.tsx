@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, Skeleton } from '@/components/ui';
-import { StatsCards, ContractsChart, StatusBreakdown } from '@/components/analytics';
+import { StatsCards, ContractsChart, StatusBreakdown, DropOffFunnel } from '@/components/analytics';
 import { useAnalytics } from '@/hooks';
 import { currentOrganization } from '@/data';
 import type { DateRange } from '@/types';
@@ -59,6 +59,8 @@ export default function AnalyticsPage() {
               created={analytics.createdContracts}
             />
           </div>
+
+          <DropOffFunnel data={analytics.dropOff} />
         </>
       ) : null}
     </div>

@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Download } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -8,20 +8,19 @@ import {
   TableHeader,
   TableRow,
   Button,
-  Badge,
 } from '@/components/ui';
-import { formatCurrency, formatNumber } from '@/lib/utils';
-import type { Invoice } from '@/types';
+import { formatNumber } from '@/lib/utils';
+import type { TopUpTransaction, UsageTransaction } from '@/types';
 
-interface InvoicesTableProps {
-  invoices: Invoice[];
+interface TopUpHistoryTableProps {
+  transactions: TopUpTransaction[];
 }
 
-export function InvoicesTable({ invoices }: InvoicesTableProps) {
-  if (invoices.length === 0) {
+export function TopUpHistoryTable({ transactions }: TopUpHistoryTableProps) {
+  if (transactions.length === 0) {
     return (
       <div className="text-center py-12 border border-gray-200">
-        <p className="text-gray-500">No invoices yet</p>
+        <p className="text-gray-500">No top-up history</p>
       </div>
     );
   }
@@ -31,35 +30,65 @@ export function InvoicesTable({ invoices }: InvoicesTableProps) {
       <Table>
         <TableHeader>
           <TableRow className="bg-gray-50">
-            <TableHead>Period</TableHead>
-            <TableHead>Contracts</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Paid At</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead>Credits Added</TableHead>
+            <TableHead>Added By</TableHead>
+            <TableHead>Reference</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {transactions.map((tx) => (
+            <TableRow key={tx.id}>
+              <TableCell>{format(tx.date, 'MMM d, yyyy')}</TableCell>
+              <TableCell className="font-medium text-green-600">
+                +{formatNumber(tx.credits)}
+              </TableCell>
+              <TableCell>{tx.addedByName}</TableCell>
+              <TableCell className="text-gray-500">{tx.reference || '—'}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+interface UsageHistoryTableProps {
+  transactions: UsageTransaction[];
+}
+
+export function UsageHistoryTable({ transactions }: UsageHistoryTableProps) {
+  if (transactions.length === 0) {
+    return (
+      <div className="text-center py-12 border border-gray-200">
+        <p className="text-gray-500">No usage history</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="border border-gray-200">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-gray-50">
+            <TableHead>Date</TableHead>
+            <TableHead>Session ID</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Credits Used</TableHead>
             <TableHead className="w-[100px]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {invoices.map((invoice) => (
-            <TableRow key={invoice.id}>
-              <TableCell className="font-medium">{invoice.period}</TableCell>
-              <TableCell>{formatNumber(invoice.contracts)}</TableCell>
-              <TableCell>{formatCurrency(invoice.amount, invoice.currency)}</TableCell>
-              <TableCell>
-                <Badge variant={
-                  invoice.status === 'PAID' ? 'paid' :
-                  invoice.status === 'PENDING' ? 'pending' : 'overdue'
-                }>
-                  {invoice.status}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-sm text-gray-600">
-                {invoice.paidAt ? format(invoice.paidAt, 'MMM d, yyyy') : '—'}
-              </TableCell>
+          {transactions.map((tx) => (
+            <TableRow key={tx.id}>
+              <TableCell>{format(tx.date, 'MMM d, yyyy HH:mm')}</TableCell>
+              <TableCell className="font-mono text-sm">{tx.sessionDisplayId}</TableCell>
+              <TableCell>{tx.type === 'FACE_SIGN' ? 'Face Sign' : 'KYC'}</TableCell>
+              <TableCell className="font-medium">-{tx.creditsUsed}</TableCell>
               <TableCell>
                 <Button variant="ghost" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  PDF
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  View
                 </Button>
               </TableCell>
             </TableRow>
@@ -69,3 +98,6 @@ export function InvoicesTable({ invoices }: InvoicesTableProps) {
     </div>
   );
 }
+
+// Keep old name for backwards compatibility but export new components
+export { TopUpHistoryTable as InvoicesTable };

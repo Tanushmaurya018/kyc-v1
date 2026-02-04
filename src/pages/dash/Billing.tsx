@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
-import { CurrentPlan, InvoicesTable } from '@/components/billing';
+import { Card, CardContent, CardHeader, CardTitle, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
+import { CurrentPlan, TopUpHistoryTable, UsageHistoryTable } from '@/components/billing';
 import { getBillingDataByOrgId, currentOrganization } from '@/data';
 
 export default function BillingPage() {
@@ -15,17 +15,25 @@ export default function BillingPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <CurrentPlan 
-        plan={billingData.plan} 
-        currentPeriod={billingData.currentPeriod} 
-      />
+      <CurrentPlan billingData={billingData} />
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Invoice History</CardTitle>
+          <CardTitle className="text-base">Credits History</CardTitle>
         </CardHeader>
         <CardContent>
-          <InvoicesTable invoices={billingData.invoices} />
+          <Tabs defaultValue="usage">
+            <TabsList className="mb-4">
+              <TabsTrigger value="usage">Usage History</TabsTrigger>
+              <TabsTrigger value="topups">Top-Up History</TabsTrigger>
+            </TabsList>
+            <TabsContent value="usage">
+              <UsageHistoryTable transactions={billingData.usageHistory} />
+            </TabsContent>
+            <TabsContent value="topups">
+              <TopUpHistoryTable transactions={billingData.topUpHistory} />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>

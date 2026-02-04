@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Building2, Users, FileText, Key, CreditCard } from 'lucide-react';
+import { ArrowLeft, Building2, Users, FileText, Key, Coins } from 'lucide-react';
 import { 
   Button, 
   Card, 
@@ -16,7 +16,7 @@ import {
 import { ContractsTable, ContractFilters } from '@/components/contracts';
 import { UsersTable } from '@/components/users';
 import { ApiKeysTable } from '@/components/api-keys';
-import { CurrentPlan, InvoicesTable } from '@/components/billing';
+import { CurrentPlan, TopUpHistoryTable, UsageHistoryTable } from '@/components/billing';
 import { 
   organizations, 
   contracts, 
@@ -25,6 +25,7 @@ import {
   getBillingDataByOrgId 
 } from '@/data';
 import { format } from 'date-fns';
+import { formatNumber } from '@/lib/utils';
 import type { ContractFilters as ContractFiltersType } from '@/types';
 
 export default function OrganizationDetailPage() {
@@ -114,9 +115,9 @@ export default function OrganizationDetailPage() {
                 <p className="text-xs text-gray-500">API Keys</p>
               </div>
               <div>
-                <CreditCard className="h-5 w-5 mx-auto text-gray-400" />
-                <p className="text-2xl font-bold mt-1">{billingData?.plan.name || 'Free'}</p>
-                <p className="text-xs text-gray-500">Plan</p>
+                <Coins className="h-5 w-5 mx-auto text-gray-400" />
+                <p className="text-2xl font-bold mt-1">{billingData ? formatNumber(billingData.credits.available) : '—'}</p>
+                <p className="text-xs text-gray-500">Credits</p>
               </div>
             </div>
           </div>
@@ -172,18 +173,25 @@ export default function OrganizationDetailPage() {
         <TabsContent value="billing" className="mt-6 space-y-6">
           {billingData ? (
             <>
-              <CurrentPlan 
-                plan={billingData.plan} 
-                currentPeriod={billingData.currentPeriod} 
-              />
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Invoice History</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <InvoicesTable invoices={billingData.invoices} />
-                </CardContent>
-              </Card>
+              <CurrentPlan billingData={billingData} />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Top-Up History</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <TopUpHistoryTable transactions={billingData.topUpHistory} />
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Recent Usage</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <UsageHistoryTable transactions={billingData.usageHistory.slice(0, 5)} />
+                  </CardContent>
+                </Card>
+              </div>
             </>
           ) : (
             <p className="text-center text-gray-500 py-8">

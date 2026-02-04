@@ -7,6 +7,21 @@ export interface DailyStats {
   expired: number;
 }
 
+// Drop-off funnel step
+export interface FunnelStep {
+  name: string;
+  count: number;
+  percentage: number;
+  dropOff: number;
+}
+
+export interface DropOffAnalytics {
+  steps: FunnelStep[];
+  totalStarted: number;
+  totalCompleted: number;
+  overallCompletionRate: number;
+}
+
 export interface AnalyticsData {
   // Overview stats
   totalContracts: number;
@@ -38,6 +53,9 @@ export interface AnalyticsData {
     count: number;
     signedCount: number;
   }[];
+
+  // Drop-off funnel
+  dropOff: DropOffAnalytics;
 }
 
 export type DateRange = '7d' | '30d' | '90d' | 'custom';

@@ -1,4 +1,5 @@
-export type UserRole = 'ADMIN' | 'MANAGER' | 'VIEWER';
+// User roles as per spec: ROOT, ADMIN, USER
+export type UserRole = 'ROOT' | 'ADMIN' | 'USER';
 
 export type UserStatus = 'ACTIVE' | 'INVITED' | 'DISABLED';
 
@@ -24,8 +25,11 @@ export interface UserPermissions {
   settings: boolean;
 }
 
+// ROOT: Full access, can create other org users
+// ADMIN: Full access except user management
+// USER: View-only access to contracts
 export const rolePermissions: Record<UserRole, UserPermissions> = {
-  ADMIN: {
+  ROOT: {
     viewContracts: true,
     exportData: true,
     manageApiKeys: true,
@@ -33,15 +37,15 @@ export const rolePermissions: Record<UserRole, UserPermissions> = {
     billingAccess: true,
     settings: true,
   },
-  MANAGER: {
+  ADMIN: {
     viewContracts: true,
     exportData: true,
-    manageApiKeys: false,
+    manageApiKeys: true,
     manageUsers: false,
-    billingAccess: false,
+    billingAccess: true,
     settings: true,
   },
-  VIEWER: {
+  USER: {
     viewContracts: true,
     exportData: false,
     manageApiKeys: false,
@@ -49,4 +53,10 @@ export const rolePermissions: Record<UserRole, UserPermissions> = {
     billingAccess: false,
     settings: false,
   },
+};
+
+export const roleLabels: Record<UserRole, string> = {
+  ROOT: 'Root Admin',
+  ADMIN: 'Administrator',
+  USER: 'User',
 };

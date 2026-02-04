@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Building2, Search, Users, FileText } from 'lucide-react';
+import { Building2, Search, Users, FileText, Coins, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Card, 
@@ -8,18 +8,27 @@ import {
   CardTitle, 
   Input,
   Badge,
+  Button,
 } from '@/components/ui';
+import { OnboardingWizard } from '@/components/onboarding';
 import { organizations, contracts, getAllUsers, getBillingDataByOrgId } from '@/data';
-
+import { formatNumber } from '@/lib/utils';
 import { format } from 'date-fns';
 
 export default function OrganizationsPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [showWizard, setShowWizard] = useState(false);
 
   const filteredOrgs = organizations.filter(org => 
     org.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleOnboardingComplete = (data: unknown) => {
+    console.log('New organization:', data);
+    // In real app, would call API to create organization
+    setShowWizard(false);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -33,9 +42,13 @@ export default function OrganizationsPage() {
             className="pl-9"
           />
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 flex-1">
           {filteredOrgs.length} organizations
         </p>
+        <Button onClick={() => setShowWizard(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          New Organization
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -96,9 +109,14 @@ export default function OrganizationsPage() {
                     <span>Completion Rate</span>
                     <span className="font-medium text-black">{completionRate}%</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Current Plan</span>
-                    <span className="font-medium text-black">{billing?.plan.name || 'Free'}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="flex items-center gap-1">
+                      <Coins className="h-3 w-3" />
+                      Credits
+                    </span>
+                    <span className="font-medium text-black">
+                      {billing ? formatNumber(billing.credits.available) : '—'}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Joined</span>
@@ -110,6 +128,12 @@ export default function OrganizationsPage() {
           );
         })}
       </div>
+
+      <OnboardingWizard 
+        open={showWizard} 
+        onOpenChange={setShowWizard}
+        onComplete={handleOnboardingComplete}
+      />
     </div>
   );
 }

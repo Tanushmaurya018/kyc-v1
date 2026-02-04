@@ -13,9 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui';
-import { StatsCards, ContractsChart, StatusBreakdown } from '@/components/analytics';
+import { StatsCards, ContractsChart, StatusBreakdown, DropOffFunnel } from '@/components/analytics';
 import { contracts, organizations } from '@/data';
-import type { DailyStats } from '@/types';
+import type { DailyStats, FunnelStep } from '@/types';
 import { subDays, isAfter } from 'date-fns';
 
 type SimpleDateRange = '7d' | '30d' | '90d';
@@ -74,8 +74,34 @@ export default function ConsoleAnalyticsPage() {
       totalChange: 12.5,
       signedChange: 8.3,
       rejectedChange: -2.1,
+      // Drop-off funnel data
+      dropOff: {
+        steps: generateFunnelSteps(totalContracts, signedContracts),
+        totalStarted: totalContracts,
+        totalCompleted: signedContracts,
+        overallCompletionRate: totalContracts > 0 ? signedContracts / totalContracts : 0,
+      },
     };
   }, [dateRange, selectedOrgId]);
+
+  // Helper to generate funnel steps
+  function generateFunnelSteps(total: number, signed: number): FunnelStep[] {
+    const linkOpened = total;
+    const documentViewed = Math.round(total * 0.92);
+    const kycStarted = Math.round(total * 0.85);
+    const kycCompleted = Math.round(total * 0.78);
+    const signatureStarted = Math.round(total * 0.72);
+    const signatureCompleted = signed;
+
+    return [
+      { name: 'Link Opened', count: linkOpened, percentage: 100, dropOff: 0 },
+      { name: 'Document Viewed', count: documentViewed, percentage: total > 0 ? Math.round((documentViewed / total) * 100) : 0, dropOff: linkOpened - documentViewed },
+      { name: 'KYC Started', count: kycStarted, percentage: total > 0 ? Math.round((kycStarted / total) * 100) : 0, dropOff: documentViewed - kycStarted },
+      { name: 'KYC Completed', count: kycCompleted, percentage: total > 0 ? Math.round((kycCompleted / total) * 100) : 0, dropOff: kycStarted - kycCompleted },
+      { name: 'Signature Started', count: signatureStarted, percentage: total > 0 ? Math.round((signatureStarted / total) * 100) : 0, dropOff: kycCompleted - signatureStarted },
+      { name: 'Signed', count: signatureCompleted, percentage: total > 0 ? Math.round((signatureCompleted / total) * 100) : 0, dropOff: signatureStarted - signatureCompleted },
+    ];
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -127,6 +153,8 @@ export default function ConsoleAnalyticsPage() {
           created={analytics.createdContracts}
         />
       </div>
+
+      <DropOffFunnel data={analytics.dropOff} />
 
       {/* Per-org breakdown */}
       {selectedOrgId === 'all' && (
