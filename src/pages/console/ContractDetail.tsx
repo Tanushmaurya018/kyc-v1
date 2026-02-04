@@ -1,7 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { ContractDetail } from '@/components/contracts';
 import { contracts } from '@/data';
-import { Skeleton } from '@/components/ui';
 
 export default function ConsoleContractDetailPage() {
   const { id } = useParams<{ id: string }>();

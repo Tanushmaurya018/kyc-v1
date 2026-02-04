@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getAnalyticsByOrgId, getAggregateAnalytics, getAnalyticsForDateRange } from '@/data';
+import { getAnalyticsForDateRange } from '@/data';
 import type { AnalyticsData, DateRange } from '@/types';
 import { delay } from '@/lib/utils';
 
