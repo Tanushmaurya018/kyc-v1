@@ -30,6 +30,8 @@ export interface Contract {
   documentHash: string;
   pageCount: number;
   fileSizeKb: number;
+  documentUrl?: string;        // Original document preview URL
+  signedDocumentUrl?: string;  // Signed document URL (after signing)
   
   // Signer
   signerName: string;

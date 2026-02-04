@@ -196,18 +196,27 @@ function generateContract(index: number, orgId: string): Contract {
 
   const idType: IdType = Math.random() > 0.3 ? 'EMIRATES_ID' : (Math.random() > 0.5 ? 'PASSPORT' : 'GCC_ID');
   const pageCount = Math.floor(Math.random() * 20) + 1;
+  const docName = documentNames[Math.floor(Math.random() * documentNames.length)];
   
   const year = createdAt.getFullYear();
   const sessionNum = (index + 1).toString().padStart(5, '0');
+
+  // Generate document URLs - using placeholder PDF service
+  const documentUrl = `/documents/original/${year}/${sessionNum}/${docName}`;
+  const signedDocumentUrl = status === 'SIGNED' 
+    ? `/documents/signed/${year}/${sessionNum}/${docName.replace('.pdf', '_signed.pdf')}`
+    : undefined;
 
   return {
     id: `contract-${orgId}-${index.toString().padStart(4, '0')}`,
     sessionId: `FS-${year}-${sessionNum}`,
     status,
-    documentName: documentNames[Math.floor(Math.random() * documentNames.length)],
+    documentName: docName,
     documentHash: generateDocumentHash(),
     pageCount,
     fileSizeKb: Math.floor(Math.random() * 5000) + 100,
+    documentUrl,
+    signedDocumentUrl,
     signerName: signerNames[Math.floor(Math.random() * signerNames.length)],
     signerIdNumber: idType === 'EMIRATES_ID' ? generateEmiratesId() : generatePassportNumber(),
     signerIdType: idType,

@@ -9,10 +9,13 @@ import {
   AlertCircle,
   Copy,
   ArrowLeft,
-  Building2
+  Building2,
+  Download,
+  Eye,
+  FileCheck,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Separator } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Separator, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
 import { StatusBadge } from './StatusBadge';
 import { organizations } from '@/data';
 import type { Contract, ContractEvent } from '@/types';
@@ -79,6 +82,84 @@ function TimelineEvent({ event }: { event: ContractEvent }) {
   );
 }
 
+// Document preview placeholder component
+function DocumentPreview({ documentName, isSigned }: { documentName: string; isSigned?: boolean }) {
+  return (
+    <div className="border border-gray-200 rounded-lg bg-gray-50 overflow-hidden">
+      {/* Document header */}
+      <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <FileText className="h-4 w-4 text-gray-500" />
+          <span className="text-sm font-medium">{documentName}</span>
+        </div>
+        {isSigned && (
+          <Badge variant="signed" className="text-xs">
+            <CheckCircle2 className="h-3 w-3 mr-1" />
+            Signed
+          </Badge>
+        )}
+      </div>
+      
+      {/* Document preview area - placeholder */}
+      <div className="aspect-[8.5/11] max-h-[600px] bg-white m-4 rounded border border-gray-200 shadow-sm overflow-hidden">
+        {/* Simulated PDF pages */}
+        <div className="h-full flex flex-col p-6">
+          {/* Header */}
+          <div className="border-b pb-4 mb-4">
+            <div className="h-6 bg-gray-200 rounded w-3/4 mb-2" />
+            <div className="h-4 bg-gray-100 rounded w-1/2" />
+          </div>
+          
+          {/* Content lines */}
+          <div className="space-y-3 flex-1">
+            <div className="h-3 bg-gray-100 rounded w-full" />
+            <div className="h-3 bg-gray-100 rounded w-full" />
+            <div className="h-3 bg-gray-100 rounded w-5/6" />
+            <div className="h-3 bg-gray-100 rounded w-full" />
+            <div className="h-3 bg-gray-100 rounded w-4/5" />
+            <div className="h-6" />
+            <div className="h-3 bg-gray-100 rounded w-full" />
+            <div className="h-3 bg-gray-100 rounded w-full" />
+            <div className="h-3 bg-gray-100 rounded w-3/4" />
+            <div className="h-6" />
+            <div className="h-3 bg-gray-100 rounded w-full" />
+            <div className="h-3 bg-gray-100 rounded w-5/6" />
+            <div className="h-3 bg-gray-100 rounded w-full" />
+            <div className="h-3 bg-gray-100 rounded w-2/3" />
+          </div>
+          
+          {/* Signature area */}
+          {isSigned && (
+            <div className="mt-auto pt-4 border-t">
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Digitally Signed</p>
+                  <div className="border-2 border-green-500 rounded px-4 py-2 bg-green-50">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+                      <span className="text-sm font-medium text-green-700">Verified Signature</span>
+                    </div>
+                    <p className="text-xs text-green-600 mt-1">Face ID authenticated</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-400">Date</p>
+                  <p className="text-sm">Feb 4, 2026</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {/* Page indicator */}
+      <div className="bg-white border-t border-gray-200 px-4 py-2 text-center">
+        <span className="text-xs text-gray-500">Page 1 of 1 (Preview)</span>
+      </div>
+    </div>
+  );
+}
+
 export function ContractDetail({ contract, basePath = '/dash', showOrg }: ContractDetailProps) {
   const navigate = useNavigate();
   const org = organizations.find(o => o.id === contract.orgId);
@@ -125,6 +206,51 @@ export function ContractDetail({ contract, basePath = '/dash', showOrg }: Contra
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Details */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Document Preview */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between text-base">
+                <span className="flex items-center gap-2">
+                  <Eye className="h-5 w-5" />
+                  Document Preview
+                </span>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Original
+                  </Button>
+                  {contract.status === 'SIGNED' && (
+                    <Button size="sm">
+                      <FileCheck className="h-4 w-4 mr-2" />
+                      Signed PDF
+                    </Button>
+                  )}
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {contract.status === 'SIGNED' ? (
+                <Tabs defaultValue="signed">
+                  <TabsList className="mb-4">
+                    <TabsTrigger value="signed">Signed Document</TabsTrigger>
+                    <TabsTrigger value="original">Original Document</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="signed">
+                    <DocumentPreview 
+                      documentName={contract.documentName.replace('.pdf', '_signed.pdf')} 
+                      isSigned 
+                    />
+                  </TabsContent>
+                  <TabsContent value="original">
+                    <DocumentPreview documentName={contract.documentName} />
+                  </TabsContent>
+                </Tabs>
+              ) : (
+                <DocumentPreview documentName={contract.documentName} />
+              )}
+            </CardContent>
+          </Card>
+
           {/* Document Info */}
           <Card>
             <CardHeader>
