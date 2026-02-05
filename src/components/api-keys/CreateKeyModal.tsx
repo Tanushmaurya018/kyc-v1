@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Copy, AlertTriangle } from 'lucide-react';
+import { Copy, AlertTriangle, Key } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -8,44 +8,48 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui';
 import { Button, Input, Label, Checkbox } from '@/components/ui';
-import { availablePermissions, type ApiKeyPermission, type ApiKeyEnvironment } from '@/types';
+
+// Stub data for available modules - in production, this would come from the organization's onboarding config
+const AVAILABLE_MODULES = [
+  { id: 'onboarding', name: 'Onboarding', description: 'New customer registration journey' },
+  { id: 'rekyc', name: 'Re-KYC', description: 'Periodic identity reverification' },
+  { id: 'authorise', name: 'Authorise', description: 'Transaction authorization service' },
+  { id: 'one-to-many', name: 'One-to-Many', description: 'Face search in database' },
+  { id: 'emirates-id', name: 'Emirates ID', description: 'Emirates ID validation' },
+  { id: 'passport', name: 'Passport', description: 'Passport validation' },
+  { id: 'person-detail', name: 'Person Detail', description: 'Person detail API' },
+  { id: 'person-gov-photo', name: 'Person Gov Photo', description: 'Government photo API' },
+  { id: 'digital-eid', name: 'Digital EID', description: 'Digital Emirates ID' },
+  { id: 'face-compare', name: 'Face Compare', description: 'Face comparison API' },
+];
 
 interface CreateKeyModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: {
     name: string;
-    environment: ApiKeyEnvironment;
-    permissions: ApiKeyPermission[];
+    modules: string[];
   }) => void;
   createdKey?: string;
 }
 
 export function CreateKeyModal({ open, onOpenChange, onSubmit, createdKey }: CreateKeyModalProps) {
   const [name, setName] = useState('');
-  const [environment, setEnvironment] = useState<ApiKeyEnvironment>('TEST');
-  const [permissions, setPermissions] = useState<ApiKeyPermission[]>(['sessions:create', 'sessions:read']);
+  const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
 
-  const handlePermissionToggle = (permission: ApiKeyPermission) => {
-    setPermissions(prev =>
-      prev.includes(permission)
-        ? prev.filter(p => p !== permission)
-        : [...prev, permission]
+  const handleModuleToggle = (moduleId: string) => {
+    setSelectedModules(prev =>
+      prev.includes(moduleId)
+        ? prev.filter(m => m !== moduleId)
+        : [...prev, moduleId]
     );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ name, environment, permissions });
+    onSubmit({ name, modules: selectedModules });
   };
 
   const copyKey = () => {
@@ -58,8 +62,7 @@ export function CreateKeyModal({ open, onOpenChange, onSubmit, createdKey }: Cre
 
   const handleClose = () => {
     setName('');
-    setEnvironment('TEST');
-    setPermissions(['sessions:create', 'sessions:read']);
+    setSelectedModules([]);
     setCopied(false);
     onOpenChange(false);
   };
@@ -77,7 +80,7 @@ export function CreateKeyModal({ open, onOpenChange, onSubmit, createdKey }: Cre
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200">
+            <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0" />
               <p className="text-sm text-amber-800">
                 Store this key securely. It will only be shown once.
@@ -87,7 +90,7 @@ export function CreateKeyModal({ open, onOpenChange, onSubmit, createdKey }: Cre
             <div>
               <Label>Your API Key</Label>
               <div className="flex items-center gap-2 mt-1">
-                <code className="flex-1 p-3 bg-gray-100 font-mono text-sm break-all">
+                <code className="flex-1 p-3 bg-muted rounded-lg font-mono text-sm break-all">
                   {createdKey}
                 </code>
                 <Button variant="outline" onClick={copyKey}>
@@ -108,72 +111,73 @@ export function CreateKeyModal({ open, onOpenChange, onSubmit, createdKey }: Cre
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent>
+      <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Create API Key</DialogTitle>
-          <DialogDescription>
-            Create a new API key to integrate with Face Sign.
-          </DialogDescription>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Key className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <DialogTitle>Create New API Key</DialogTitle>
+              <DialogDescription>
+                Create a new API key to access our services. You will only be able to view the key once after creation.
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
           <div>
-            <Label htmlFor="name">Key Name</Label>
+            <Label htmlFor="name">API Key Name</Label>
             <Input
               id="name"
-              placeholder="e.g., Production API Key"
+              placeholder="e.g. Production API Key"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="mt-1"
               required
             />
-          </div>
-
-          <div>
-            <Label htmlFor="environment">Environment</Label>
-            <Select value={environment} onValueChange={(v) => setEnvironment(v as ApiKeyEnvironment)}>
-              <SelectTrigger className="mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="TEST">Test</SelectItem>
-                <SelectItem value="LIVE">Live</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-gray-500 mt-1">
-              {environment === 'TEST' 
-                ? 'Use for development and testing' 
-                : 'Use for production integrations'}
+            <p className="text-xs text-muted-foreground mt-1">
+              Give your API key a descriptive name for easy identification.
             </p>
           </div>
 
           <div>
-            <Label>Permissions</Label>
-            <div className="mt-2 space-y-3">
-              {availablePermissions.map((perm) => (
-                <div key={perm.value} className="flex items-start gap-3">
+            <Label>Enabled Modules</Label>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              {AVAILABLE_MODULES.map((module) => (
+                <label
+                  key={module.id}
+                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                    selectedModules.includes(module.id)
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-muted-foreground'
+                  }`}
+                >
                   <Checkbox
-                    id={perm.value}
-                    checked={permissions.includes(perm.value)}
-                    onCheckedChange={() => handlePermissionToggle(perm.value)}
+                    id={module.id}
+                    checked={selectedModules.includes(module.id)}
+                    onCheckedChange={() => handleModuleToggle(module.id)}
                   />
-                  <div>
-                    <Label htmlFor={perm.value} className="cursor-pointer">
-                      {perm.label}
-                    </Label>
-                    <p className="text-xs text-gray-500">{perm.description}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{module.name}</p>
                   </div>
-                </div>
+                </label>
               ))}
             </div>
+            {selectedModules.length === 0 && (
+              <p className="text-xs text-destructive mt-2">
+                Please select at least one module
+              </p>
+            )}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <Button type="button" variant="outline" onClick={handleClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={!name || permissions.length === 0}>
-              Create Key
+            <Button type="submit" disabled={!name || selectedModules.length === 0}>
+              Create API Key
             </Button>
           </DialogFooter>
         </form>

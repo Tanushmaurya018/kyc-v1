@@ -10,7 +10,6 @@ import {
   Badge,
   Button,
 } from '@/components/ui';
-import { OnboardingWizard } from '@/components/onboarding';
 import { organizations, contracts, getAllUsers, getBillingDataByOrgId } from '@/data';
 import { formatNumber } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -18,17 +17,10 @@ import { format } from 'date-fns';
 export default function OrganizationsPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const [showWizard, setShowWizard] = useState(false);
 
   const filteredOrgs = organizations.filter(org => 
     org.name.toLowerCase().includes(search.toLowerCase())
   );
-
-  const handleOnboardingComplete = (data: unknown) => {
-    console.log('New organization:', data);
-    // In real app, would call API to create organization
-    setShowWizard(false);
-  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -42,12 +34,12 @@ export default function OrganizationsPage() {
             className="pl-9"
           />
         </div>
-        <p className="text-sm text-gray-500 flex-1">
+        <p className="text-sm text-muted-foreground flex-1">
           {filteredOrgs.length} organizations
         </p>
-        <Button onClick={() => setShowWizard(true)}>
+        <Button onClick={() => navigate('/console/onboard-client')}>
           <Plus className="h-4 w-4 mr-2" />
-          New Organization
+          Onboard Client
         </Button>
       </div>
 
@@ -65,7 +57,7 @@ export default function OrganizationsPage() {
           return (
             <Card 
               key={org.id} 
-              className="cursor-pointer hover:border-gray-300 transition-colors"
+              className="cursor-pointer hover:border-muted-foreground transition-colors"
               onClick={() => navigate(`/console/organizations/${org.id}`)}
             >
               <CardHeader className="pb-3">
@@ -78,13 +70,13 @@ export default function OrganizationsPage() {
                         className="h-10 w-10 object-contain"
                       />
                     ) : (
-                      <div className="h-10 w-10 bg-gray-100 flex items-center justify-center">
-                        <Building2 className="h-5 w-5 text-gray-400" />
+                      <div className="h-10 w-10 bg-muted rounded-lg flex items-center justify-center">
+                        <Building2 className="h-5 w-5 text-muted-foreground" />
                       </div>
                     )}
                     <div>
                       <CardTitle className="text-sm font-semibold">{org.name}</CardTitle>
-                      <p className="text-xs text-gray-500">{org.industry}</p>
+                      <p className="text-xs text-muted-foreground">{org.industry}</p>
                     </div>
                   </div>
                   <Badge variant={org.status === 'ACTIVE' ? 'default' : 'secondary'}>
@@ -95,26 +87,26 @@ export default function OrganizationsPage() {
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-gray-400" />
+                    <FileText className="h-4 w-4 text-muted-foreground" />
                     <span>{orgContracts.length} contracts</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-gray-400" />
+                    <Users className="h-4 w-4 text-muted-foreground" />
                     <span>{orgUsers.length} users</span>
                   </div>
                 </div>
                 
-                <div className="text-xs text-gray-500 space-y-1">
+                <div className="text-xs text-muted-foreground space-y-1">
                   <div className="flex justify-between">
                     <span>Completion Rate</span>
-                    <span className="font-medium text-black">{completionRate}%</span>
+                    <span className="font-medium text-foreground">{completionRate}%</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="flex items-center gap-1">
                       <Coins className="h-3 w-3" />
                       Credits
                     </span>
-                    <span className="font-medium text-black">
+                    <span className="font-medium text-foreground">
                       {billing ? formatNumber(billing.credits.available) : '—'}
                     </span>
                   </div>
@@ -128,12 +120,6 @@ export default function OrganizationsPage() {
           );
         })}
       </div>
-
-      <OnboardingWizard 
-        open={showWizard} 
-        onOpenChange={setShowWizard}
-        onComplete={handleOnboardingComplete}
-      />
     </div>
   );
 }

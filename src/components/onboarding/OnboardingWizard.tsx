@@ -9,16 +9,25 @@ import {
   Input,
   Label,
   Textarea,
+  Switch,
+  Checkbox,
+} from '@/components/ui';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui';
 import { 
   Building2, 
-  Users, 
-  Key, 
-  Coins, 
+  MapPin, 
+  UserCog, 
   Check,
   ChevronRight,
   ChevronLeft,
-  Upload,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -28,57 +37,134 @@ interface OnboardingWizardProps {
   onComplete: (data: OnboardingData) => void;
 }
 
+// Document types available
+type DocumentType = 'emirates_id' | 'passport' | 'gcc';
+type CaptureMethod = 'manual' | 'scan';
+type ModuleType = 'onboarding' | 'card_details' | 'face_verification' | 'liveness' | 'document_scan';
+
+interface DocumentConfig {
+  type: DocumentType;
+  captureMethod: CaptureMethod;
+  enabled: boolean;
+}
+
 interface OnboardingData {
-  organization: {
+  // Step 1: Company Information
+  company: {
     name: string;
-    industry: string;
-    contactEmail: string;
-    address: string;
-    logo?: File;
-  };
-  rootUser: {
-    name: string;
+    organizationType: string;
     email: string;
+    phone: string;
+    // Toggles
+    sandboxMode: boolean;
+    populationMigration: boolean;
+    proactiveMonitoring: boolean;
+    nfcVerification: boolean;
+    // Document configuration
+    documents: DocumentConfig[];
+    // Selected modules
+    modules: ModuleType[];
   };
-  apiKeys: {
-    createSandbox: boolean;
-    createProduction: boolean;
-    webhookUrl?: string;
+  // Step 2: Address & Contact
+  addressContact: {
+    city: string;
+    country: string;
+    primaryContactName: string;
+    primaryContactEmail: string;
+    additionalInfo: string;
   };
-  credits: {
-    initialCredits: number;
-    reference: string;
+  // Step 3: Root User
+  rootUser: {
+    username: string;
+    email: string;
+    phone: string;
+    password: string;
   };
 }
 
 const STEPS = [
-  { id: 'org', title: 'Organization', icon: Building2 },
-  { id: 'user', title: 'Root User', icon: Users },
-  { id: 'api', title: 'API Setup', icon: Key },
-  { id: 'credits', title: 'Credits', icon: Coins },
-  { id: 'review', title: 'Review', icon: Check },
+  { id: 'company', title: 'Company Information', icon: Building2 },
+  { id: 'address', title: 'Address & Contact', icon: MapPin },
+  { id: 'rootUser', title: 'Root User', icon: UserCog },
+];
+
+const ORGANIZATION_TYPES = [
+  'Government',
+  'Semi-Government',
+  'Private',
+  'Free Zone',
+  'Financial Institution',
+  'Healthcare',
+  'Education',
+  'Telecom',
+  'Real Estate',
+  'Other',
+];
+
+const COUNTRIES = [
+  'United Arab Emirates',
+  'Saudi Arabia',
+  'Qatar',
+  'Kuwait',
+  'Bahrain',
+  'Oman',
+];
+
+const UAE_CITIES = [
+  'Abu Dhabi',
+  'Dubai',
+  'Sharjah',
+  'Ajman',
+  'Ras Al Khaimah',
+  'Fujairah',
+  'Umm Al Quwain',
+];
+
+const MODULES: { id: ModuleType; label: string; description: string }[] = [
+  { id: 'onboarding', label: 'Onboarding', description: 'Customer onboarding flow' },
+  { id: 'card_details', label: 'Card Details', description: 'Card information capture' },
+  { id: 'face_verification', label: 'Face Verification', description: 'Facial recognition check' },
+  { id: 'liveness', label: 'Liveness Detection', description: 'Anti-spoofing verification' },
+  { id: 'document_scan', label: 'Document Scan', description: 'ID document scanning' },
+];
+
+const DOCUMENT_TYPES: { id: DocumentType; label: string }[] = [
+  { id: 'emirates_id', label: 'Emirates ID' },
+  { id: 'passport', label: 'Passport' },
+  { id: 'gcc', label: 'GCC ID' },
 ];
 
 export function OnboardingWizard({ open, onOpenChange, onComplete }: OnboardingWizardProps) {
   const [step, setStep] = useState(0);
   const [data, setData] = useState<OnboardingData>({
-    organization: {
+    company: {
       name: '',
-      industry: '',
-      contactEmail: '',
-      address: '',
+      organizationType: '',
+      email: '',
+      phone: '',
+      sandboxMode: true,
+      populationMigration: false,
+      proactiveMonitoring: true,
+      nfcVerification: false,
+      documents: [
+        { type: 'emirates_id', captureMethod: 'scan', enabled: true },
+        { type: 'passport', captureMethod: 'scan', enabled: false },
+        { type: 'gcc', captureMethod: 'manual', enabled: false },
+      ],
+      modules: ['onboarding', 'face_verification', 'liveness'],
+    },
+    addressContact: {
+      city: '',
+      country: 'United Arab Emirates',
+      primaryContactName: '',
+      primaryContactEmail: '',
+      additionalInfo: '',
     },
     rootUser: {
-      name: '',
+      username: '',
       email: '',
-    },
-    apiKeys: {
-      createSandbox: true,
-      createProduction: false,
-    },
-    credits: {
-      initialCredits: 1000,
-      reference: '',
+      phone: '',
+      password: '',
     },
   });
 
@@ -104,39 +190,46 @@ export function OnboardingWizard({ open, onOpenChange, onComplete }: OnboardingW
   const resetForm = () => {
     setStep(0);
     setData({
-      organization: {
+      company: {
         name: '',
-        industry: '',
-        contactEmail: '',
-        address: '',
+        organizationType: '',
+        email: '',
+        phone: '',
+        sandboxMode: true,
+        populationMigration: false,
+        proactiveMonitoring: true,
+        nfcVerification: false,
+        documents: [
+          { type: 'emirates_id', captureMethod: 'scan', enabled: true },
+          { type: 'passport', captureMethod: 'scan', enabled: false },
+          { type: 'gcc', captureMethod: 'manual', enabled: false },
+        ],
+        modules: ['onboarding', 'face_verification', 'liveness'],
+      },
+      addressContact: {
+        city: '',
+        country: 'United Arab Emirates',
+        primaryContactName: '',
+        primaryContactEmail: '',
+        additionalInfo: '',
       },
       rootUser: {
-        name: '',
+        username: '',
         email: '',
-      },
-      apiKeys: {
-        createSandbox: true,
-        createProduction: false,
-      },
-      credits: {
-        initialCredits: 1000,
-        reference: '',
+        phone: '',
+        password: '',
       },
     });
   };
 
   const canProceed = () => {
     switch (step) {
-      case 0: // Organization
-        return data.organization.name && data.organization.industry && data.organization.contactEmail;
-      case 1: // Root User
-        return data.rootUser.name && data.rootUser.email;
-      case 2: // API Setup
-        return true;
-      case 3: // Credits
-        return data.credits.initialCredits > 0;
-      case 4: // Review
-        return true;
+      case 0: // Company Information
+        return data.company.name && data.company.organizationType && data.company.email && data.company.phone;
+      case 1: // Address & Contact
+        return data.addressContact.city && data.addressContact.country && data.addressContact.primaryContactName && data.addressContact.primaryContactEmail;
+      case 2: // Root User
+        return data.rootUser.username && data.rootUser.email && data.rootUser.phone && data.rootUser.password;
       default:
         return false;
     }
@@ -144,34 +237,58 @@ export function OnboardingWizard({ open, onOpenChange, onComplete }: OnboardingW
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Organization</DialogTitle>
+          <DialogTitle>Onboard New Client</DialogTitle>
           <DialogDescription>
-            Follow the steps below to onboard a new client organization.
+            Complete the following steps to onboard a new client to UAE KYC.
           </DialogDescription>
         </DialogHeader>
 
-        {/* Step Indicator */}
-        <div className="flex items-center justify-between px-4 py-6 border-b">
+        {/* Step Indicator / Breadcrumb */}
+        <div className="flex items-center justify-between px-2 py-4 border-b border-border">
           {STEPS.map((s, i) => {
             const Icon = s.icon;
             const isActive = i === step;
             const isComplete = i < step;
             return (
-              <div key={s.id} className="flex items-center">
-                <div className={cn(
-                  "flex items-center justify-center h-10 w-10 rounded-full border-2 transition-colors",
-                  isComplete ? "bg-black border-black text-white" :
-                  isActive ? "border-black text-black" :
-                  "border-gray-200 text-gray-400"
-                )}>
-                  {isComplete ? <Check className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
-                </div>
+              <div key={s.id} className="flex items-center flex-1">
+                <button
+                  onClick={() => i < step && setStep(i)}
+                  disabled={i > step}
+                  className={cn(
+                    "flex items-center gap-2 transition-colors",
+                    isComplete && "cursor-pointer",
+                    i > step && "cursor-not-allowed opacity-50"
+                  )}
+                >
+                  <div className={cn(
+                    "flex items-center justify-center h-10 w-10 rounded-full border-2 transition-colors",
+                    isComplete ? "bg-primary border-primary text-primary-foreground" :
+                    isActive ? "border-primary text-primary" :
+                    "border-border text-muted-foreground"
+                  )}>
+                    {isComplete ? <Check className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
+                  </div>
+                  <div className="hidden sm:block text-left">
+                    <p className={cn(
+                      "text-xs",
+                      isActive || isComplete ? "text-foreground" : "text-muted-foreground"
+                    )}>
+                      Step {i + 1}
+                    </p>
+                    <p className={cn(
+                      "text-sm font-medium",
+                      isActive ? "text-primary" : isComplete ? "text-foreground" : "text-muted-foreground"
+                    )}>
+                      {s.title}
+                    </p>
+                  </div>
+                </button>
                 {i < STEPS.length - 1 && (
                   <div className={cn(
-                    "w-8 h-0.5 mx-2",
-                    i < step ? "bg-black" : "bg-gray-200"
+                    "flex-1 h-0.5 mx-4",
+                    i < step ? "bg-primary" : "bg-border"
                   )} />
                 )}
               </div>
@@ -180,123 +297,339 @@ export function OnboardingWizard({ open, onOpenChange, onComplete }: OnboardingW
         </div>
 
         {/* Step Content */}
-        <div className="py-6 min-h-[300px]">
+        <div className="py-6 min-h-[400px]">
           {step === 0 && (
-            <OrganizationStep 
-              data={data.organization} 
-              onChange={(org) => setData(d => ({ ...d, organization: org }))} 
+            <CompanyInformationStep 
+              data={data.company} 
+              onChange={(company) => setData(d => ({ ...d, company }))} 
             />
           )}
           {step === 1 && (
-            <RootUserStep 
-              data={data.rootUser} 
-              onChange={(user) => setData(d => ({ ...d, rootUser: user }))} 
+            <AddressContactStep 
+              data={data.addressContact} 
+              onChange={(addressContact) => setData(d => ({ ...d, addressContact }))} 
             />
           )}
           {step === 2 && (
-            <ApiSetupStep 
-              data={data.apiKeys} 
-              onChange={(api) => setData(d => ({ ...d, apiKeys: api }))} 
+            <RootUserStep 
+              data={data.rootUser} 
+              onChange={(rootUser) => setData(d => ({ ...d, rootUser }))} 
             />
-          )}
-          {step === 3 && (
-            <CreditsStep 
-              data={data.credits} 
-              onChange={(credits) => setData(d => ({ ...d, credits }))} 
-            />
-          )}
-          {step === 4 && (
-            <ReviewStep data={data} />
           )}
         </div>
 
-        {/* Footer */}
-        <div className="flex justify-between pt-4 border-t">
+        {/* Footer Navigation */}
+        <div className="flex justify-between pt-4 border-t border-border">
           <Button 
             variant="outline" 
             onClick={handleBack}
             disabled={isFirstStep}
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
-            Back
+            Previous
           </Button>
-          <Button 
-            onClick={handleNext}
-            disabled={!canProceed()}
-          >
-            {isLastStep ? 'Create Organization' : 'Continue'}
-            {!isLastStep && <ChevronRight className="h-4 w-4 ml-1" />}
-          </Button>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              Step {step + 1} of {STEPS.length}
+            </span>
+            <Button 
+              onClick={handleNext}
+              disabled={!canProceed()}
+            >
+              {isLastStep ? 'Complete Onboarding' : 'Next'}
+              {!isLastStep && <ChevronRight className="h-4 w-4 ml-1" />}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
 
-// Step Components
-function OrganizationStep({ 
+// Step 1: Company Information
+function CompanyInformationStep({ 
   data, 
   onChange 
 }: { 
-  data: OnboardingData['organization']; 
-  onChange: (data: OnboardingData['organization']) => void;
+  data: OnboardingData['company']; 
+  onChange: (data: OnboardingData['company']) => void;
 }) {
+  const toggleModule = (moduleId: ModuleType) => {
+    const modules = data.modules.includes(moduleId)
+      ? data.modules.filter(m => m !== moduleId)
+      : [...data.modules, moduleId];
+    onChange({ ...data, modules });
+  };
+
+  const updateDocument = (type: DocumentType, updates: Partial<DocumentConfig>) => {
+    const documents = data.documents.map(doc => 
+      doc.type === type ? { ...doc, ...updates } : doc
+    );
+    onChange({ ...data, documents });
+  };
+
   return (
-    <div className="space-y-4">
-      <div>
-        <Label htmlFor="orgName">Organization Name *</Label>
-        <Input
-          id="orgName"
-          value={data.name}
-          onChange={(e) => onChange({ ...data, name: e.target.value })}
-          placeholder="e.g., Abu Dhabi Digital Authority"
-          className="mt-1"
-        />
+    <div className="space-y-6">
+      {/* Basic Information */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="companyName">Company Name *</Label>
+          <Input
+            id="companyName"
+            value={data.name}
+            onChange={(e) => onChange({ ...data, name: e.target.value })}
+            placeholder="e.g., Emirates NBD"
+            className="mt-1"
+          />
+        </div>
+        <div>
+          <Label htmlFor="orgType">Organization Type *</Label>
+          <Select 
+            value={data.organizationType} 
+            onValueChange={(value) => onChange({ ...data, organizationType: value })}
+          >
+            <SelectTrigger className="mt-1">
+              <SelectValue placeholder="Select type" />
+            </SelectTrigger>
+            <SelectContent>
+              {ORGANIZATION_TYPES.map(type => (
+                <SelectItem key={type} value={type}>{type}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="companyEmail">Email *</Label>
+          <Input
+            id="companyEmail"
+            type="email"
+            value={data.email}
+            onChange={(e) => onChange({ ...data, email: e.target.value })}
+            placeholder="contact@company.ae"
+            className="mt-1"
+          />
+        </div>
+        <div>
+          <Label htmlFor="companyPhone">Phone *</Label>
+          <Input
+            id="companyPhone"
+            type="tel"
+            value={data.phone}
+            onChange={(e) => onChange({ ...data, phone: e.target.value })}
+            placeholder="+971 4 XXX XXXX"
+            className="mt-1"
+          />
+        </div>
       </div>
-      <div>
-        <Label htmlFor="industry">Industry *</Label>
-        <Input
-          id="industry"
-          value={data.industry}
-          onChange={(e) => onChange({ ...data, industry: e.target.value })}
-          placeholder="e.g., Government, Healthcare, Finance"
-          className="mt-1"
-        />
+
+      {/* Feature Toggles */}
+      <div className="space-y-3">
+        <Label className="text-base font-medium">Configuration Options</Label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+            <div>
+              <p className="text-sm font-medium">Sandbox Mode</p>
+              <p className="text-xs text-muted-foreground">Enable test environment</p>
+            </div>
+            <Switch
+              checked={data.sandboxMode}
+              onCheckedChange={(checked) => onChange({ ...data, sandboxMode: checked })}
+            />
+          </div>
+          <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+            <div>
+              <p className="text-sm font-medium">Population Migration</p>
+              <p className="text-xs text-muted-foreground">Bulk data import support</p>
+            </div>
+            <Switch
+              checked={data.populationMigration}
+              onCheckedChange={(checked) => onChange({ ...data, populationMigration: checked })}
+            />
+          </div>
+          <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+            <div>
+              <p className="text-sm font-medium">Proactive Monitoring</p>
+              <p className="text-xs text-muted-foreground">Real-time alerts & monitoring</p>
+            </div>
+            <Switch
+              checked={data.proactiveMonitoring}
+              onCheckedChange={(checked) => onChange({ ...data, proactiveMonitoring: checked })}
+            />
+          </div>
+          <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+            <div>
+              <p className="text-sm font-medium">NFC Verification</p>
+              <p className="text-xs text-muted-foreground">Enable NFC chip reading</p>
+            </div>
+            <Switch
+              checked={data.nfcVerification}
+              onCheckedChange={(checked) => onChange({ ...data, nfcVerification: checked })}
+            />
+          </div>
+        </div>
       </div>
-      <div>
-        <Label htmlFor="contactEmail">Contact Email *</Label>
-        <Input
-          id="contactEmail"
-          type="email"
-          value={data.contactEmail}
-          onChange={(e) => onChange({ ...data, contactEmail: e.target.value })}
-          placeholder="contact@organization.ae"
-          className="mt-1"
-        />
+
+      {/* Document Configuration */}
+      <div className="space-y-3">
+        <Label className="text-base font-medium">Document Types & Capture Methods</Label>
+        <div className="space-y-2">
+          {DOCUMENT_TYPES.map(docType => {
+            const docConfig = data.documents.find(d => d.type === docType.id);
+            return (
+              <div key={docType.id} className="flex items-center gap-4 p-3 rounded-lg border border-border">
+                <Checkbox
+                  checked={docConfig?.enabled || false}
+                  onCheckedChange={(checked) => updateDocument(docType.id, { enabled: !!checked })}
+                />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{docType.label}</p>
+                </div>
+                <Select 
+                  value={docConfig?.captureMethod || 'scan'} 
+                  onValueChange={(value: CaptureMethod) => updateDocument(docType.id, { captureMethod: value })}
+                  disabled={!docConfig?.enabled}
+                >
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="scan">Scan</SelectItem>
+                    <SelectItem value="manual">Manual</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            );
+          })}
+        </div>
       </div>
-      <div>
-        <Label htmlFor="address">Address</Label>
-        <Textarea
-          id="address"
-          value={data.address}
-          onChange={(e) => onChange({ ...data, address: e.target.value })}
-          placeholder="Organization address"
-          className="mt-1"
-          rows={2}
-        />
-      </div>
-      <div>
-        <Label>Logo (optional)</Label>
-        <div className="mt-1 border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:border-gray-300 transition-colors cursor-pointer">
-          <Upload className="h-6 w-6 text-gray-400 mx-auto" />
-          <p className="text-sm text-gray-500 mt-2">Click to upload or drag and drop</p>
-          <p className="text-xs text-gray-400">PNG, JPG up to 2MB</p>
+
+      {/* Module Selection */}
+      <div className="space-y-3">
+        <Label className="text-base font-medium">Enabled Modules</Label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {MODULES.map(module => (
+            <label
+              key={module.id}
+              className={cn(
+                "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                data.modules.includes(module.id)
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-muted-foreground"
+              )}
+            >
+              <Checkbox
+                checked={data.modules.includes(module.id)}
+                onCheckedChange={() => toggleModule(module.id)}
+              />
+              <div>
+                <p className="text-sm font-medium">{module.label}</p>
+                <p className="text-xs text-muted-foreground">{module.description}</p>
+              </div>
+            </label>
+          ))}
         </div>
       </div>
     </div>
   );
 }
 
+// Step 2: Address & Contact
+function AddressContactStep({ 
+  data, 
+  onChange 
+}: { 
+  data: OnboardingData['addressContact']; 
+  onChange: (data: OnboardingData['addressContact']) => void;
+}) {
+  return (
+    <div className="space-y-6">
+      {/* Physical Address */}
+      <div className="space-y-4">
+        <Label className="text-base font-medium">Physical Address</Label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="country">Country *</Label>
+            <Select 
+              value={data.country} 
+              onValueChange={(value) => onChange({ ...data, country: value })}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select country" />
+              </SelectTrigger>
+              <SelectContent>
+                {COUNTRIES.map(country => (
+                  <SelectItem key={country} value={country}>{country}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="city">City *</Label>
+            <Select 
+              value={data.city} 
+              onValueChange={(value) => onChange({ ...data, city: value })}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select city" />
+              </SelectTrigger>
+              <SelectContent>
+                {UAE_CITIES.map(city => (
+                  <SelectItem key={city} value={city}>{city}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      {/* Primary Contact Person */}
+      <div className="space-y-4">
+        <Label className="text-base font-medium">Primary Contact Person</Label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="contactName">Full Name *</Label>
+            <Input
+              id="contactName"
+              value={data.primaryContactName}
+              onChange={(e) => onChange({ ...data, primaryContactName: e.target.value })}
+              placeholder="e.g., Ahmed Al Malik"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="contactEmail">Email Address *</Label>
+            <Input
+              id="contactEmail"
+              type="email"
+              value={data.primaryContactEmail}
+              onChange={(e) => onChange({ ...data, primaryContactEmail: e.target.value })}
+              placeholder="ahmed@company.ae"
+              className="mt-1"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Additional Information */}
+      <div>
+        <Label htmlFor="additionalInfo">Additional Information</Label>
+        <Textarea
+          id="additionalInfo"
+          value={data.additionalInfo}
+          onChange={(e) => onChange({ ...data, additionalInfo: e.target.value })}
+          placeholder="Any special requirements, notes, or comments..."
+          className="mt-1"
+          rows={4}
+        />
+        <p className="text-xs text-muted-foreground mt-1">
+          Include any special configuration needs or business requirements.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// Step 3: Root User
 function RootUserStep({ 
   data, 
   onChange 
@@ -304,180 +637,128 @@ function RootUserStep({
   data: OnboardingData['rootUser']; 
   onChange: (data: OnboardingData['rootUser']) => void;
 }) {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-gray-500 mb-4">
-        The root user will have full administrative access to the organization and can invite other users.
-      </p>
-      <div>
-        <Label htmlFor="userName">Full Name *</Label>
-        <Input
-          id="userName"
-          value={data.name}
-          onChange={(e) => onChange({ ...data, name: e.target.value })}
-          placeholder="e.g., Ahmed Al Malik"
-          className="mt-1"
-        />
-      </div>
-      <div>
-        <Label htmlFor="userEmail">Email Address *</Label>
-        <Input
-          id="userEmail"
-          type="email"
-          value={data.email}
-          onChange={(e) => onChange({ ...data, email: e.target.value })}
-          placeholder="admin@organization.ae"
-          className="mt-1"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          An invitation will be sent to this email address.
+    <div className="space-y-6">
+      <div className="p-4 bg-muted/50 rounded-lg border border-border">
+        <p className="text-sm text-muted-foreground">
+          The root user will have full administrative access to the client's UAE KYC dashboard.
+          This account can manage users, view analytics, and configure settings.
         </p>
       </div>
-    </div>
-  );
-}
 
-function ApiSetupStep({ 
-  data, 
-  onChange 
-}: { 
-  data: OnboardingData['apiKeys']; 
-  onChange: (data: OnboardingData['apiKeys']) => void;
-}) {
-  return (
-    <div className="space-y-4">
-      <p className="text-sm text-gray-500 mb-4">
-        Configure API access for the organization. Keys can be managed later.
-      </p>
-      <div className="space-y-3">
-        <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-gray-300 transition-colors">
-          <input
-            type="checkbox"
-            checked={data.createSandbox}
-            onChange={(e) => onChange({ ...data, createSandbox: e.target.checked })}
-            className="rounded border-gray-300"
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="username">Username *</Label>
+          <Input
+            id="username"
+            value={data.username}
+            onChange={(e) => onChange({ ...data, username: e.target.value })}
+            placeholder="e.g., admin_emirates"
+            className="mt-1"
           />
-          <div>
-            <p className="font-medium">Create Sandbox API Key</p>
-            <p className="text-sm text-gray-500">For testing and development</p>
-          </div>
-        </label>
-        <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-gray-300 transition-colors">
-          <input
-            type="checkbox"
-            checked={data.createProduction}
-            onChange={(e) => onChange({ ...data, createProduction: e.target.checked })}
-            className="rounded border-gray-300"
+          <p className="text-xs text-muted-foreground mt-1">
+            Used for login. Letters, numbers, and underscores only.
+          </p>
+        </div>
+        <div>
+          <Label htmlFor="rootEmail">Email Address *</Label>
+          <Input
+            id="rootEmail"
+            type="email"
+            value={data.email}
+            onChange={(e) => onChange({ ...data, email: e.target.value })}
+            placeholder="admin@company.ae"
+            className="mt-1"
           />
-          <div>
-            <p className="font-medium">Create Production API Key</p>
-            <p className="text-sm text-gray-500">For live document signing</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Verification email will be sent to this address.
+          </p>
+        </div>
+        <div>
+          <Label htmlFor="rootPhone">Phone Number *</Label>
+          <Input
+            id="rootPhone"
+            type="tel"
+            value={data.phone}
+            onChange={(e) => onChange({ ...data, phone: e.target.value })}
+            placeholder="+971 50 XXX XXXX"
+            className="mt-1"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            For 2FA and account recovery.
+          </p>
+        </div>
+        <div>
+          <Label htmlFor="rootPassword">Password *</Label>
+          <div className="relative mt-1">
+            <Input
+              id="rootPassword"
+              type={showPassword ? 'text' : 'password'}
+              value={data.password}
+              onChange={(e) => onChange({ ...data, password: e.target.value })}
+              placeholder="••••••••"
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
           </div>
-        </label>
+          <p className="text-xs text-muted-foreground mt-1">
+            Min 8 characters with uppercase, lowercase, and number.
+          </p>
+        </div>
       </div>
-      <div className="pt-4">
-        <Label htmlFor="webhook">Webhook URL (optional)</Label>
-        <Input
-          id="webhook"
-          value={data.webhookUrl || ''}
-          onChange={(e) => onChange({ ...data, webhookUrl: e.target.value })}
-          placeholder="https://api.organization.ae/webhooks/facesign"
-          className="mt-1"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          Receive real-time notifications for signing events.
-        </p>
-      </div>
+
+      {/* Password strength indicator */}
+      {data.password && (
+        <div className="space-y-2">
+          <div className="flex gap-1">
+            {[1, 2, 3, 4].map((level) => {
+              const strength = getPasswordStrength(data.password);
+              return (
+                <div
+                  key={level}
+                  className={cn(
+                    "h-1 flex-1 rounded-full",
+                    level <= strength
+                      ? strength <= 1 ? "bg-destructive" 
+                        : strength <= 2 ? "bg-chart-3" 
+                        : "bg-chart-2"
+                      : "bg-border"
+                  )}
+                />
+              );
+            })}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Password strength: {getPasswordStrengthLabel(data.password)}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
 
-function CreditsStep({ 
-  data, 
-  onChange 
-}: { 
-  data: OnboardingData['credits']; 
-  onChange: (data: OnboardingData['credits']) => void;
-}) {
-  return (
-    <div className="space-y-4">
-      <p className="text-sm text-gray-500 mb-4">
-        Add initial credits to the organization's account. 1 credit = 1 signed contract.
-      </p>
-      <div>
-        <Label htmlFor="credits">Initial Credits *</Label>
-        <Input
-          id="credits"
-          type="number"
-          min="0"
-          step="100"
-          value={data.initialCredits}
-          onChange={(e) => onChange({ ...data, initialCredits: parseInt(e.target.value) || 0 })}
-          className="mt-1"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          Recommended: 1,000+ credits for new organizations.
-        </p>
-      </div>
-      <div>
-        <Label htmlFor="reference">Payment Reference</Label>
-        <Input
-          id="reference"
-          value={data.reference}
-          onChange={(e) => onChange({ ...data, reference: e.target.value })}
-          placeholder="e.g., INV-2026-ORG-001"
-          className="mt-1"
-        />
-      </div>
-    </div>
-  );
+// Helper functions
+function getPasswordStrength(password: string): number {
+  let strength = 0;
+  if (password.length >= 8) strength++;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+  if (/\d/.test(password)) strength++;
+  if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++;
+  return strength;
 }
 
-function ReviewStep({ data }: { data: OnboardingData }) {
-  return (
-    <div className="space-y-4">
-      <p className="text-sm text-gray-500 mb-4">
-        Review the details below and click "Create Organization" to complete setup.
-      </p>
-      
-      <div className="border rounded-lg divide-y">
-        <div className="p-4">
-          <h4 className="text-sm font-medium text-gray-500">Organization</h4>
-          <p className="font-semibold mt-1">{data.organization.name}</p>
-          <p className="text-sm text-gray-600">{data.organization.industry}</p>
-          <p className="text-sm text-gray-600">{data.organization.contactEmail}</p>
-        </div>
-        <div className="p-4">
-          <h4 className="text-sm font-medium text-gray-500">Root User</h4>
-          <p className="font-semibold mt-1">{data.rootUser.name}</p>
-          <p className="text-sm text-gray-600">{data.rootUser.email}</p>
-        </div>
-        <div className="p-4">
-          <h4 className="text-sm font-medium text-gray-500">API Keys</h4>
-          <div className="mt-1 space-x-2">
-            {data.apiKeys.createSandbox && (
-              <span className="inline-flex items-center px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded">
-                Sandbox Key
-              </span>
-            )}
-            {data.apiKeys.createProduction && (
-              <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs rounded">
-                Production Key
-              </span>
-            )}
-            {!data.apiKeys.createSandbox && !data.apiKeys.createProduction && (
-              <span className="text-sm text-gray-500">No keys</span>
-            )}
-          </div>
-        </div>
-        <div className="p-4">
-          <h4 className="text-sm font-medium text-gray-500">Initial Credits</h4>
-          <p className="font-semibold mt-1">{data.credits.initialCredits.toLocaleString()} credits</p>
-          {data.credits.reference && (
-            <p className="text-sm text-gray-600">Ref: {data.credits.reference}</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+function getPasswordStrengthLabel(password: string): string {
+  const strength = getPasswordStrength(password);
+  if (strength <= 1) return 'Weak';
+  if (strength <= 2) return 'Fair';
+  if (strength <= 3) return 'Good';
+  return 'Strong';
 }

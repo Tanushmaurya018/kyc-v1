@@ -21,6 +21,7 @@ export interface ApiKey {
   createdBy: string;
   createdByName: string;
   permissions: ApiKeyPermission[];
+  modules?: string[]; // Enabled modules for this API key
   orgId: string;
 }
 

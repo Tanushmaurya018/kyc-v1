@@ -20,6 +20,7 @@ import {
   ConsoleContractDetailPage,
   OrganizationsPage,
   OrganizationDetailPage,
+  OnboardClientPage,
 } from '@/pages/console';
 
 export const router = createBrowserRouter([
@@ -90,6 +91,10 @@ export const router = createBrowserRouter([
       {
         path: 'organizations/:id',
         element: <OrganizationDetailPage />,
+      },
+      {
+        path: 'onboard-client',
+        element: <OnboardClientPage />,
       },
     ],
   },

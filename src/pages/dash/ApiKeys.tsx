@@ -4,7 +4,7 @@ import { Button } from '@/components/ui';
 import { ApiKeysTable, CreateKeyModal } from '@/components/api-keys';
 import { getApiKeysByOrgId } from '@/data';
 import { currentOrganization } from '@/data';
-import type { ApiKey, ApiKeyEnvironment, ApiKeyPermission } from '@/types';
+import type { ApiKey } from '@/types';
 import { generateId } from '@/lib/utils';
 
 export default function ApiKeysPage() {
@@ -14,21 +14,21 @@ export default function ApiKeysPage() {
 
   const handleCreate = (data: {
     name: string;
-    environment: ApiKeyEnvironment;
-    permissions: ApiKeyPermission[];
+    modules: string[];
   }) => {
     const newKey: ApiKey = {
       id: generateId(),
       name: data.name,
-      keyPrefix: data.environment === 'LIVE' ? 'fs_live_' : 'fs_test_',
-      fullKey: `fs_${data.environment.toLowerCase()}_${generateId()}${generateId()}`,
-      environment: data.environment,
+      keyPrefix: 'fs_live_',
+      fullKey: `fs_live_${generateId()}${generateId()}`,
+      environment: 'LIVE',
       status: 'ACTIVE',
       createdAt: new Date(),
       lastUsedAt: null,
       createdBy: 'user-009',
       createdByName: 'Layla Ahmed',
-      permissions: data.permissions,
+      permissions: ['sessions:create', 'sessions:read'],
+      modules: data.modules,
       orgId: currentOrganization.id,
     };
     
