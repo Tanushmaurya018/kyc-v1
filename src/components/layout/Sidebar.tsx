@@ -4,7 +4,6 @@ import {
   FileText, 
   Key, 
   Users, 
-  BarChart3, 
   CreditCard, 
   Settings,
   Building2,
@@ -44,12 +43,6 @@ const dashNavItems: { section: string; items: NavItem[] }[] = [
     ],
   },
   {
-    section: 'INSIGHTS',
-    items: [
-      { label: 'Analytics', href: '/dash/analytics', icon: BarChart3 },
-    ],
-  },
-  {
     section: 'ACCOUNT',
     items: [
       { label: 'Billing', href: '/dash/billing', icon: CreditCard },
@@ -65,12 +58,6 @@ const consoleNavItems: { section: string; items: NavItem[] }[] = [
       { label: 'Dashboard', href: '/console', icon: LayoutDashboard },
       { label: 'Contracts', href: '/console/contracts', icon: FileText },
       { label: 'Organizations', href: '/console/organizations', icon: Building2 },
-    ],
-  },
-  {
-    section: 'INSIGHTS',
-    items: [
-      { label: 'Analytics', href: '/console/analytics', icon: BarChart3 },
     ],
   },
 ];
@@ -89,18 +76,18 @@ export function Sidebar({ collapsed, onToggle, isConsole }: SidebarProps) {
   return (
     <aside 
       className={cn(
-        "fixed left-0 top-0 z-40 h-screen bg-white border-r border-gray-200 transition-all duration-300 flex flex-col",
+        "fixed left-0 top-0 z-40 h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 flex flex-col",
         collapsed ? "w-16" : "w-64"
       )}
     >
-      <ProductSwitcher collapsed={collapsed} />
+      <ProductSwitcher collapsed={collapsed} showToggle={!isConsole} />
       
       <nav className="flex-1 overflow-y-auto py-4">
         {navItems.map((group) => (
           <div key={group.section} className="mb-6">
             {!collapsed && (
               <div className="px-4 mb-2">
-                <span className="text-xs font-medium text-gray-400 tracking-wider">
+                <span className="text-xs font-medium text-muted-foreground tracking-wider">
                   {group.section}
                 </span>
               </div>
@@ -111,10 +98,10 @@ export function Sidebar({ collapsed, onToggle, isConsole }: SidebarProps) {
                   <NavLink
                     to={item.href}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 text-sm transition-colors",
+                      "flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors",
                       isActive(item.href)
-                        ? "bg-gray-100 text-black font-medium"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-black",
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
                       collapsed && "justify-center px-2"
                     )}
                     title={collapsed ? item.label : undefined}
@@ -131,7 +118,7 @@ export function Sidebar({ collapsed, onToggle, isConsole }: SidebarProps) {
 
       {/* User Profile */}
       <div className={cn(
-        "border-t border-gray-200 p-4",
+        "border-t border-sidebar-border p-4",
         collapsed && "px-2"
       )}>
         <div className={cn(
@@ -139,14 +126,14 @@ export function Sidebar({ collapsed, onToggle, isConsole }: SidebarProps) {
           collapsed && "justify-center"
         )}>
           <Avatar className="h-9 w-9">
-            <AvatarFallback className="bg-black text-white text-xs">
+            <AvatarFallback className="bg-primary text-primary-foreground text-xs">
               {currentUser.name.split(' ').map(n => n[0]).join('')}
             </AvatarFallback>
           </Avatar>
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{currentUser.name}</p>
-              <p className="text-xs text-gray-500 truncate">{currentUser.role}</p>
+              <p className="text-xs text-muted-foreground truncate">{currentUser.role}</p>
             </div>
           )}
         </div>
@@ -155,7 +142,7 @@ export function Sidebar({ collapsed, onToggle, isConsole }: SidebarProps) {
       {/* Collapse Toggle */}
       <button
         onClick={onToggle}
-        className="absolute -right-3 top-20 w-6 h-6 bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+        className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-background border border-border flex items-center justify-center hover:bg-accent transition-colors"
       >
         {collapsed ? (
           <ChevronRight className="h-4 w-4" />

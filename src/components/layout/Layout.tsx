@@ -36,7 +36,7 @@ export function Layout({ mode = 'dash' }: LayoutProps) {
   const { title, description } = pageConfig[basePath] || { title: 'Face Sign' };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <Sidebar 
         collapsed={sidebarCollapsed} 
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}

@@ -24,7 +24,7 @@ import {
 import { StatusBadge } from './StatusBadge';
 import { organizations } from '@/data';
 import type { Contract, ContractFilters } from '@/types';
-import { cn } from '@/lib/utils';
+
 
 interface ContractsTableProps {
   contracts: Contract[];
@@ -98,7 +98,7 @@ export function ContractsTable({ contracts, isLoading, filters, basePath = '/das
         cell: ({ row }) => (
           <div>
             <p className="font-medium">{row.getValue('signerName')}</p>
-            <p className="text-xs text-gray-500">{row.original.signerIdType.replace('_', ' ')}</p>
+            <p className="text-xs text-muted-foreground">{row.original.signerIdType.replace('_', ' ')}</p>
           </div>
         ),
       },
@@ -124,27 +124,21 @@ export function ContractsTable({ contracts, isLoading, filters, basePath = '/das
           </Button>
         ),
         cell: ({ row }) => (
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-muted-foreground">
             {format(row.getValue('createdAt'), 'MMM d, yyyy HH:mm')}
           </span>
         ),
       },
       {
-        id: 'expiresOrCompleted',
-        header: 'Expires/Completed',
+        id: 'lastActivity',
+        header: 'Last Activity',
         cell: ({ row }) => {
           const contract = row.original;
-          if (contract.completedAt) {
-            return (
-              <span className="text-sm text-green-600">
-                {format(contract.completedAt, 'MMM d, yyyy HH:mm')}
-              </span>
-            );
-          }
-          const isExpired = new Date(contract.expiresAt) < new Date();
+          // Show the most recent activity date
+          const activityDate = contract.completedAt || contract.expiresAt;
           return (
-            <span className={cn("text-sm", isExpired ? "text-red-600" : "text-gray-600")}>
-              {format(contract.expiresAt, 'MMM d, yyyy HH:mm')}
+            <span className="text-sm text-muted-foreground">
+              {format(activityDate, 'MMM d, yyyy HH:mm')}
             </span>
           );
         },
@@ -221,9 +215,9 @@ export function ContractsTable({ contracts, isLoading, filters, basePath = '/das
 
   if (filteredContracts.length === 0) {
     return (
-      <div className="text-center py-12 border border-gray-200">
-        <p className="text-gray-500 mb-2">No contracts found</p>
-        <p className="text-sm text-gray-400">
+      <div className="text-center py-12 rounded-xl border border-border">
+        <p className="text-muted-foreground mb-2">No contracts found</p>
+        <p className="text-sm text-muted-foreground/70">
           {filters.search || filters.status ? 'Try adjusting your filters' : 'Contracts will appear here once created'}
         </p>
       </div>
@@ -232,11 +226,11 @@ export function ContractsTable({ contracts, isLoading, filters, basePath = '/das
 
   return (
     <div>
-      <div className="border border-gray-200">
+      <div className="rounded-xl border border-border overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="bg-gray-50">
+              <TableRow key={headerGroup.id} className="bg-muted/50">
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
@@ -265,16 +259,21 @@ export function ContractsTable({ contracts, isLoading, filters, basePath = '/das
         </Table>
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between mt-4">
-        <p className="text-sm text-gray-500">
-          Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{' '}
-          {Math.min(
-            (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-            filteredContracts.length
-          )}{' '}
-          of {filteredContracts.length} results
-        </p>
+      {/* Pagination and Total */}
+      <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+        <div className="flex items-center gap-4">
+          <p className="text-sm text-muted-foreground">
+            Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{' '}
+            {Math.min(
+              (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+              filteredContracts.length
+            )}{' '}
+            of {filteredContracts.length}
+          </p>
+          <p className="text-sm font-medium text-foreground">
+            Total: {filteredContracts.length} contracts
+          </p>
+        </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"

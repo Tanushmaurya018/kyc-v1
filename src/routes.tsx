@@ -9,7 +9,6 @@ import {
   ContractDetailPage,
   ApiKeysPage,
   UsersPage,
-  AnalyticsPage,
   BillingPage,
   SettingsPage,
 } from '@/pages/dash';
@@ -21,7 +20,6 @@ import {
   ConsoleContractDetailPage,
   OrganizationsPage,
   OrganizationDetailPage,
-  ConsoleAnalyticsPage,
 } from '@/pages/console';
 
 export const router = createBrowserRouter([
@@ -59,10 +57,6 @@ export const router = createBrowserRouter([
         element: <UsersPage />,
       },
       {
-        path: 'analytics',
-        element: <AnalyticsPage />,
-      },
-      {
         path: 'billing',
         element: <BillingPage />,
       },
@@ -96,10 +90,6 @@ export const router = createBrowserRouter([
       {
         path: 'organizations/:id',
         element: <OrganizationDetailPage />,
-      },
-      {
-        path: 'analytics',
-        element: <ConsoleAnalyticsPage />,
       },
     ],
   },

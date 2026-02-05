@@ -3,16 +3,17 @@ import { cn } from '@/lib/utils';
 
 interface ProductSwitcherProps {
   collapsed?: boolean;
+  showToggle?: boolean;  // Only show toggle for client dashboard, not ICP console
 }
 
-export function ProductSwitcher({ collapsed }: ProductSwitcherProps) {
+export function ProductSwitcher({ collapsed, showToggle = true }: ProductSwitcherProps) {
   return (
     <div className={cn(
       "flex items-center gap-3 px-3 py-3 border-b border-gray-200",
       collapsed && "justify-center px-2"
     )}>
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-black text-white flex items-center justify-center text-xs font-bold">
+        <div className="w-8 h-8 bg-black text-white flex items-center justify-center text-xs font-bold rounded-lg">
           FS
         </div>
         {!collapsed && (
@@ -22,9 +23,9 @@ export function ProductSwitcher({ collapsed }: ProductSwitcherProps) {
           </div>
         )}
       </div>
-      {!collapsed && (
+      {!collapsed && showToggle && (
         <button 
-          className="ml-auto p-1.5 hover:bg-gray-100 transition-colors"
+          className="ml-auto p-1.5 hover:bg-gray-100 transition-colors rounded-lg"
           title="Switch to UAE KYC"
         >
           <ArrowLeftRight className="h-4 w-4 text-gray-400" />

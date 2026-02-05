@@ -106,7 +106,7 @@ export function OrgSettingsForm({ settings, onSave }: OrgSettingsFormProps) {
                 onChange={(e) => handleChange('sessionTtlHours', parseInt(e.target.value))}
                 className="mt-1"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Sessions expire after this duration
               </p>
             </div>
@@ -121,7 +121,7 @@ export function OrgSettingsForm({ settings, onSave }: OrgSettingsFormProps) {
                 onChange={(e) => handleChange('maxFileSizeMb', parseInt(e.target.value))}
                 className="mt-1"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Maximum document size allowed
               </p>
             </div>
@@ -170,7 +170,7 @@ export function OrgSettingsForm({ settings, onSave }: OrgSettingsFormProps) {
           <div className="flex items-center justify-between">
             <div>
               <Label>Email Notifications</Label>
-              <p className="text-sm text-gray-500">Receive email notifications for session events</p>
+              <p className="text-sm text-muted-foreground">Receive email notifications for session events</p>
             </div>
             <Switch
               checked={formData.emailNotifications}
@@ -183,7 +183,7 @@ export function OrgSettingsForm({ settings, onSave }: OrgSettingsFormProps) {
           <div className="flex items-center justify-between">
             <div>
               <Label>Notify on Completion</Label>
-              <p className="text-sm text-gray-500">Send email when a contract is signed</p>
+              <p className="text-sm text-muted-foreground">Send email when a contract is signed</p>
             </div>
             <Switch
               checked={formData.notifyOnComplete}
@@ -195,7 +195,7 @@ export function OrgSettingsForm({ settings, onSave }: OrgSettingsFormProps) {
           <div className="flex items-center justify-between">
             <div>
               <Label>Notify on Rejection</Label>
-              <p className="text-sm text-gray-500">Send email when KYC verification fails</p>
+              <p className="text-sm text-muted-foreground">Send email when KYC verification fails</p>
             </div>
             <Switch
               checked={formData.notifyOnReject}

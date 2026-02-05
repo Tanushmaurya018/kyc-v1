@@ -1,7 +1,7 @@
-import { FileText, CheckCircle2, Clock, TrendingUp } from 'lucide-react';
+import { FileText, CheckCircle2, Clock, TrendingUp, Key } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, Button, Skeleton } from '@/components/ui';
-import { StatsCards } from '@/components/analytics';
+import { StatsCards, ContractsChart, StatusBreakdown, DropOffFunnel } from '@/components/analytics';
 import { StatusBadge } from '@/components/contracts';
 import { useContracts } from '@/hooks';
 import { useAnalytics } from '@/hooks';
@@ -36,6 +36,22 @@ export default function DashboardPage() {
           rejectedChange={analytics.rejectedChange}
         />
       ) : null}
+
+      {/* Contracts Over Time & Status Breakdown - moved up */}
+      {analytics && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <ContractsChart data={analytics.dailyStats} />
+          </div>
+          <StatusBreakdown
+            signed={analytics.signedContracts}
+            rejected={analytics.rejectedContracts}
+            abandoned={analytics.abandonedContracts}
+            expired={analytics.expiredContracts}
+            created={analytics.createdContracts}
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Contracts */}
@@ -153,21 +169,18 @@ export default function DashboardPage() {
                 className="w-full justify-start"
                 onClick={() => navigate('/dash/api-keys')}
               >
-                <Clock className="h-4 w-4 mr-2" />
+                <Key className="h-4 w-4 mr-2" />
                 Manage API Keys
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => navigate('/dash/analytics')}
-              >
-                <TrendingUp className="h-4 w-4 mr-2" />
-                View Analytics
               </Button>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Drop-off Funnel */}
+      {analytics && (
+        <DropOffFunnel data={analytics.dropOff} />
+      )}
     </div>
   );
 }

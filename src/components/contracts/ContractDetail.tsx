@@ -40,36 +40,36 @@ const eventIcons: Record<string, React.ComponentType<{ className?: string }>> = 
 };
 
 const eventColors: Record<string, string> = {
-  CREATED: 'text-gray-500',
-  KYC_STARTED: 'text-amber-500',
-  KYC_COMPLETED: 'text-green-500',
-  KYC_FAILED: 'text-red-500',
-  SIGNATURE_POSITIONED: 'text-blue-500',
-  SIGNED: 'text-green-500',
-  REJECTED: 'text-red-500',
-  ABANDONED: 'text-gray-500',
-  EXPIRED: 'text-gray-500',
+  CREATED: 'text-muted-foreground',
+  KYC_STARTED: 'text-chart-3',
+  KYC_COMPLETED: 'text-chart-2',
+  KYC_FAILED: 'text-destructive',
+  SIGNATURE_POSITIONED: 'text-primary',
+  SIGNED: 'text-chart-2',
+  REJECTED: 'text-destructive',
+  ABANDONED: 'text-muted-foreground',
+  EXPIRED: 'text-muted-foreground',
 };
 
 function TimelineEvent({ event }: { event: ContractEvent }) {
   const Icon = eventIcons[event.type] || Clock;
-  const color = eventColors[event.type] || 'text-gray-500';
+  const color = eventColors[event.type] || 'text-muted-foreground';
 
   return (
     <div className="flex gap-4">
       <div className="flex flex-col items-center">
-        <div className={cn("w-8 h-8 rounded-full border-2 flex items-center justify-center bg-white", color, `border-current`)}>
+        <div className={cn("w-8 h-8 rounded-full border-2 flex items-center justify-center bg-background", color, `border-current`)}>
           <Icon className="h-4 w-4" />
         </div>
-        <div className="flex-1 w-px bg-gray-200 my-2" />
+        <div className="flex-1 w-px bg-border my-2" />
       </div>
       <div className="pb-6">
         <p className="font-medium text-sm">{event.description}</p>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           {format(event.timestamp, 'MMM d, yyyy HH:mm:ss')}
         </p>
         {event.metadata && (
-          <div className="mt-2 text-xs text-gray-600 bg-gray-50 p-2 rounded">
+          <div className="mt-2 text-xs text-muted-foreground bg-muted/50 p-2 rounded-lg">
             {Object.entries(event.metadata).map(([key, value]) => (
               <div key={key}>
                 <span className="font-medium">{key}:</span> {String(value)}
@@ -88,11 +88,11 @@ const SAMPLE_PDF_URL = 'https://mozilla.github.io/pdf.js/web/compressed.tracemon
 // Document preview component with actual PDF embed
 function DocumentPreview({ documentName, isSigned, pageCount = 1 }: { documentName: string; isSigned?: boolean; pageCount?: number }) {
   return (
-    <div className="border border-gray-200 rounded-lg bg-gray-50 overflow-hidden">
+    <div className="border border-border rounded-xl bg-muted/30 overflow-hidden">
       {/* Document header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+      <div className="bg-background border-b border-border px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 text-gray-500" />
+          <FileText className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium">{documentName}</span>
         </div>
         {isSigned && (
@@ -104,23 +104,23 @@ function DocumentPreview({ documentName, isSigned, pageCount = 1 }: { documentNa
       </div>
       
       {/* PDF Embed */}
-      <div className="relative bg-white">
+      <div className="relative bg-background">
         <object
           data={`${SAMPLE_PDF_URL}#toolbar=0&navpanes=0&scrollbar=0`}
           type="application/pdf"
           className="w-full h-[600px]"
         >
           {/* Fallback for browsers that don't support PDF embed */}
-          <div className="w-full h-[600px] flex flex-col items-center justify-center bg-gray-50 p-8">
-            <FileText className="h-16 w-16 text-gray-300 mb-4" />
-            <p className="text-gray-500 text-center mb-4">
+          <div className="w-full h-[600px] flex flex-col items-center justify-center bg-muted/30 p-8">
+            <FileText className="h-16 w-16 text-muted-foreground/30 mb-4" />
+            <p className="text-muted-foreground text-center mb-4">
               PDF preview not available in this browser.
             </p>
             <a 
               href={SAMPLE_PDF_URL} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-blue-600 hover:underline text-sm"
+              className="text-primary hover:underline text-sm"
             >
               Open PDF in new tab →
             </a>
@@ -142,9 +142,9 @@ function DocumentPreview({ documentName, isSigned, pageCount = 1 }: { documentNa
       </div>
       
       {/* Page indicator */}
-      <div className="bg-white border-t border-gray-200 px-4 py-2 flex items-center justify-between">
-        <span className="text-xs text-gray-500">{pageCount} page{pageCount > 1 ? 's' : ''}</span>
-        <span className="text-xs text-gray-400">Sample PDF for demonstration</span>
+      <div className="bg-background border-t border-border px-4 py-2 flex items-center justify-between">
+        <span className="text-xs text-muted-foreground">{pageCount} page{pageCount > 1 ? 's' : ''}</span>
+        <span className="text-xs text-muted-foreground/70">Sample PDF for demonstration</span>
       </div>
     </div>
   );

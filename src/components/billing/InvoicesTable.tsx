@@ -19,17 +19,17 @@ interface TopUpHistoryTableProps {
 export function TopUpHistoryTable({ transactions }: TopUpHistoryTableProps) {
   if (transactions.length === 0) {
     return (
-      <div className="text-center py-12 border border-gray-200">
-        <p className="text-gray-500">No top-up history</p>
+      <div className="text-center py-12 rounded-xl border border-border">
+        <p className="text-muted-foreground">No top-up history</p>
       </div>
     );
   }
 
   return (
-    <div className="border border-gray-200">
+    <div className="rounded-xl border border-border overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="bg-gray-50">
+          <TableRow className="bg-muted/50">
             <TableHead>Date</TableHead>
             <TableHead>Credits Added</TableHead>
             <TableHead>Added By</TableHead>
@@ -40,11 +40,11 @@ export function TopUpHistoryTable({ transactions }: TopUpHistoryTableProps) {
           {transactions.map((tx) => (
             <TableRow key={tx.id}>
               <TableCell>{format(tx.date, 'MMM d, yyyy')}</TableCell>
-              <TableCell className="font-medium text-green-600">
+              <TableCell className="font-medium text-chart-2">
                 +{formatNumber(tx.credits)}
               </TableCell>
               <TableCell>{tx.addedByName}</TableCell>
-              <TableCell className="text-gray-500">{tx.reference || '—'}</TableCell>
+              <TableCell className="text-muted-foreground">{tx.reference || '—'}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -60,17 +60,17 @@ interface UsageHistoryTableProps {
 export function UsageHistoryTable({ transactions }: UsageHistoryTableProps) {
   if (transactions.length === 0) {
     return (
-      <div className="text-center py-12 border border-gray-200">
-        <p className="text-gray-500">No usage history</p>
+      <div className="text-center py-12 rounded-xl border border-border">
+        <p className="text-muted-foreground">No usage history</p>
       </div>
     );
   }
 
   return (
-    <div className="border border-gray-200">
+    <div className="rounded-xl border border-border overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="bg-gray-50">
+          <TableRow className="bg-muted/50">
             <TableHead>Date</TableHead>
             <TableHead>Session ID</TableHead>
             <TableHead>Type</TableHead>

@@ -103,22 +103,6 @@ export function DropOffFunnel({ data }: DropOffFunnelProps) {
             );
           })}
         </div>
-
-        {/* Summary Cards */}
-        <div className="mt-6 pt-4 border-t grid grid-cols-3 gap-3">
-          <div className="bg-gray-50 rounded-lg p-3 text-center">
-            <p className="text-xl font-semibold text-gray-900">{formatNumber(data.totalStarted)}</p>
-            <p className="text-xs text-gray-500 mt-0.5">Started</p>
-          </div>
-          <div className="bg-emerald-50 rounded-lg p-3 text-center">
-            <p className="text-xl font-semibold text-emerald-700">{formatNumber(data.totalCompleted)}</p>
-            <p className="text-xs text-emerald-600 mt-0.5">Completed</p>
-          </div>
-          <div className="bg-red-50 rounded-lg p-3 text-center">
-            <p className="text-xl font-semibold text-red-600">{formatNumber(data.totalStarted - data.totalCompleted)}</p>
-            <p className="text-xs text-red-500 mt-0.5">Dropped Off</p>
-          </div>
-        </div>
       </CardContent>
     </Card>
   );
