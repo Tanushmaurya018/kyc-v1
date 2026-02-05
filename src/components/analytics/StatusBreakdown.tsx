@@ -18,12 +18,13 @@ interface StatusBreakdownProps {
   created: number;
 }
 
+// Muted/softer color palette
 const COLORS = {
-  signed: '#22c55e',
-  rejected: '#ef4444',
-  abandoned: '#6b7280',
-  expired: '#9ca3af',
-  created: '#f59e0b',
+  signed: '#6ee7b7',    // emerald-300
+  rejected: '#fca5a5',  // red-300
+  abandoned: '#9ca3af', // gray-400
+  expired: '#d1d5db',   // gray-300
+  created: '#fcd34d',   // amber-300
 };
 
 export function StatusBreakdown({ signed, rejected, abandoned, expired, created }: StatusBreakdownProps) {
@@ -63,7 +64,8 @@ export function StatusBreakdown({ signed, rejected, abandoned, expired, created 
                 contentStyle={{
                   backgroundColor: 'white',
                   border: '1px solid #e5e5e5',
-                  borderRadius: 0,
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                 }}
                 formatter={(value) => [
                   `${value} (${formatPercentage((value as number) / total)})`,
