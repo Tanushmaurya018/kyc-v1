@@ -80,7 +80,7 @@ export function CreateKeyModal({ open, onOpenChange, onSubmit, createdKey }: Cre
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
               <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0" />
               <p className="text-sm text-amber-800">
                 Store this key securely. It will only be shown once.
@@ -90,7 +90,7 @@ export function CreateKeyModal({ open, onOpenChange, onSubmit, createdKey }: Cre
             <div>
               <Label>Your API Key</Label>
               <div className="flex items-center gap-2 mt-1">
-                <code className="flex-1 p-3 bg-muted rounded-lg font-mono text-sm break-all">
+                <code className="flex-1 p-3 bg-muted rounded-xl font-mono text-sm break-all">
                   {createdKey}
                 </code>
                 <Button variant="outline" onClick={copyKey}>
@@ -114,7 +114,7 @@ export function CreateKeyModal({ open, onOpenChange, onSubmit, createdKey }: Cre
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Key className="h-5 w-5 text-primary" />
             </div>
             <div>
@@ -148,7 +148,7 @@ export function CreateKeyModal({ open, onOpenChange, onSubmit, createdKey }: Cre
               {AVAILABLE_MODULES.map((module) => (
                 <label
                   key={module.id}
-                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
                     selectedModules.includes(module.id)
                       ? 'border-primary bg-primary/5'
                       : 'border-border hover:border-muted-foreground'

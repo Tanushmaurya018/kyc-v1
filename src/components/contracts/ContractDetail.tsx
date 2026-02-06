@@ -69,7 +69,7 @@ function TimelineEvent({ event }: { event: ContractEvent }) {
           {format(event.timestamp, 'MMM d, yyyy HH:mm:ss')}
         </p>
         {event.metadata && (
-          <div className="mt-2 text-xs text-muted-foreground bg-muted/50 p-2 rounded-lg">
+          <div className="mt-2 text-xs text-muted-foreground bg-muted/50 p-2 rounded-xl">
             {Object.entries(event.metadata).map(([key, value]) => (
               <div key={key}>
                 <span className="font-medium">{key}:</span> {String(value)}
@@ -129,7 +129,7 @@ function DocumentPreview({ documentName, isSigned, pageCount = 1 }: { documentNa
         
         {/* Signed overlay indicator */}
         {isSigned && (
-          <div className="absolute bottom-4 right-4 bg-green-50 border-2 border-green-500 rounded-lg px-4 py-3 shadow-lg">
+          <div className="absolute bottom-4 right-4 bg-green-50 border-2 border-green-500 rounded-xl px-4 py-3 shadow-lg">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-600" />
               <div>

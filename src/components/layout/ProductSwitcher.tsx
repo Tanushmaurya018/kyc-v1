@@ -13,7 +13,7 @@ export function ProductSwitcher({ collapsed, showToggle = true }: ProductSwitche
       collapsed && "justify-center px-2"
     )}>
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-black text-white flex items-center justify-center text-xs font-bold rounded-lg">
+        <div className="w-8 h-8 bg-black text-white flex items-center justify-center text-xs font-bold rounded-xl">
           FS
         </div>
         {!collapsed && (
@@ -25,7 +25,7 @@ export function ProductSwitcher({ collapsed, showToggle = true }: ProductSwitche
       </div>
       {!collapsed && showToggle && (
         <button 
-          className="ml-auto p-1.5 hover:bg-gray-100 transition-colors rounded-lg"
+          className="ml-auto p-1.5 hover:bg-gray-100 transition-colors rounded-xl"
           title="Switch to UAE KYC"
         >
           <ArrowLeftRight className="h-4 w-4 text-gray-400" />

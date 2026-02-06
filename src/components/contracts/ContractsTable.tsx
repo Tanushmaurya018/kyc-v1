@@ -10,7 +10,7 @@ import {
   type SortingState,
 } from '@tanstack/react-table';
 import { format } from 'date-fns';
-import { ArrowUpDown, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { ArrowUpDown, Eye } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -20,6 +20,7 @@ import {
   TableRow,
   Button,
   Skeleton,
+  TablePagination,
 } from '@/components/ui';
 import { StatusBadge } from './StatusBadge';
 import { organizations } from '@/data';
@@ -215,7 +216,7 @@ export function ContractsTable({ contracts, isLoading, filters, basePath = '/das
 
   if (filteredContracts.length === 0) {
     return (
-      <div className="text-center py-12 rounded-xl border border-border">
+      <div className="text-center py-12 rounded-lg border border-border bg-card">
         <p className="text-muted-foreground mb-2">No contracts found</p>
         <p className="text-sm text-muted-foreground/70">
           {filters.search || filters.status ? 'Try adjusting your filters' : 'Contracts will appear here once created'}
@@ -226,7 +227,7 @@ export function ContractsTable({ contracts, isLoading, filters, basePath = '/das
 
   return (
     <div>
-      <div className="rounded-xl border border-border overflow-hidden">
+      <div className="rounded-lg border border-border overflow-hidden bg-card">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -259,42 +260,15 @@ export function ContractsTable({ contracts, isLoading, filters, basePath = '/das
         </Table>
       </div>
 
-      {/* Pagination and Total */}
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-        <div className="flex items-center gap-4">
-          <p className="text-sm text-muted-foreground">
-            Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{' '}
-            {Math.min(
-              (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-              filteredContracts.length
-            )}{' '}
-            of {filteredContracts.length}
-          </p>
-          <p className="text-sm font-medium text-foreground">
-            Total: {filteredContracts.length} contracts
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      <TablePagination
+        currentPage={table.getState().pagination.pageIndex + 1}
+        totalPages={table.getPageCount()}
+        totalItems={filteredContracts.length}
+        pageSize={table.getState().pagination.pageSize}
+        onPageChange={(page) => table.setPageIndex(page - 1)}
+        onPageSizeChange={(size) => table.setPageSize(size)}
+        itemLabel="contracts"
+      />
     </div>
   );
 }

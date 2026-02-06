@@ -426,7 +426,7 @@ function CompanyInformationStep({
       <div className="space-y-3">
         <Label className="text-base font-medium">Configuration Options</Label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+          <div className="flex items-center justify-between p-3 rounded-xl border border-border">
             <div>
               <p className="text-sm font-medium">Sandbox Mode</p>
               <p className="text-xs text-muted-foreground">Enable test environment</p>
@@ -436,7 +436,7 @@ function CompanyInformationStep({
               onCheckedChange={(checked) => onChange({ ...data, sandboxMode: checked })}
             />
           </div>
-          <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+          <div className="flex items-center justify-between p-3 rounded-xl border border-border">
             <div>
               <p className="text-sm font-medium">Population Migration</p>
               <p className="text-xs text-muted-foreground">Bulk data import support</p>
@@ -446,7 +446,7 @@ function CompanyInformationStep({
               onCheckedChange={(checked) => onChange({ ...data, populationMigration: checked })}
             />
           </div>
-          <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+          <div className="flex items-center justify-between p-3 rounded-xl border border-border">
             <div>
               <p className="text-sm font-medium">Proactive Monitoring</p>
               <p className="text-xs text-muted-foreground">Real-time alerts & monitoring</p>
@@ -456,7 +456,7 @@ function CompanyInformationStep({
               onCheckedChange={(checked) => onChange({ ...data, proactiveMonitoring: checked })}
             />
           </div>
-          <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+          <div className="flex items-center justify-between p-3 rounded-xl border border-border">
             <div>
               <p className="text-sm font-medium">NFC Verification</p>
               <p className="text-xs text-muted-foreground">Enable NFC chip reading</p>
@@ -476,7 +476,7 @@ function CompanyInformationStep({
           {DOCUMENT_TYPES.map(docType => {
             const docConfig = data.documents.find(d => d.type === docType.id);
             return (
-              <div key={docType.id} className="flex items-center gap-4 p-3 rounded-lg border border-border">
+              <div key={docType.id} className="flex items-center gap-4 p-3 rounded-xl border border-border">
                 <Checkbox
                   checked={docConfig?.enabled || false}
                   onCheckedChange={(checked) => updateDocument(docType.id, { enabled: !!checked })}
@@ -511,7 +511,7 @@ function CompanyInformationStep({
             <label
               key={module.id}
               className={cn(
-                "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors",
                 data.modules.includes(module.id)
                   ? "border-primary bg-primary/5"
                   : "border-border hover:border-muted-foreground"
@@ -641,7 +641,7 @@ function RootUserStep({
 
   return (
     <div className="space-y-6">
-      <div className="p-4 bg-muted/50 rounded-lg border border-border">
+      <div className="p-4 bg-muted/50 rounded-xl border border-border">
         <p className="text-sm text-muted-foreground">
           The root user will have full administrative access to the client's UAE KYC dashboard.
           This account can manage users, view analytics, and configure settings.

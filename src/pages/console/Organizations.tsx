@@ -70,7 +70,7 @@ export default function OrganizationsPage() {
                         className="h-10 w-10 object-contain"
                       />
                     ) : (
-                      <div className="h-10 w-10 bg-muted rounded-lg flex items-center justify-center">
+                      <div className="h-10 w-10 bg-muted rounded-xl flex items-center justify-center">
                         <Building2 className="h-5 w-5 text-muted-foreground" />
                       </div>
                     )}

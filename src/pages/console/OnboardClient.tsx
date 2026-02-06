@@ -456,7 +456,7 @@ export default function OnboardClient() {
               onClick={() => selectOrgType('government')}
             >
               <CardHeader className="pb-4">
-                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2 group-hover:bg-primary/20 transition-colors">
+                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-2 group-hover:bg-primary/20 transition-colors">
                   <Building2 className="h-6 w-6 text-primary" />
                 </div>
                 <CardTitle>Government Organization</CardTitle>
@@ -482,7 +482,7 @@ export default function OnboardClient() {
               onClick={() => selectOrgType('private')}
             >
               <CardHeader className="pb-4">
-                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2 group-hover:bg-primary/20 transition-colors">
+                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-2 group-hover:bg-primary/20 transition-colors">
                   <Briefcase className="h-6 w-6 text-primary" />
                 </div>
                 <CardTitle>Private Organization</CardTitle>
@@ -971,7 +971,7 @@ function PrivateFlow({
             <button
               onClick={() => toggleSection('module-config')}
               className={cn(
-                "w-full flex items-center justify-between p-3 rounded-lg transition-colors",
+                "w-full flex items-center justify-between p-3 rounded-xl transition-colors",
                 currentStep === 'module-config' || currentServiceConfig
                   ? "bg-primary/10 text-primary"
                   : isModuleConfigComplete
@@ -1020,7 +1020,7 @@ function PrivateFlow({
                         setCurrentServiceSubIndex(0);
                       }}
                       className={cn(
-                        "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between",
+                        "w-full text-left px-3 py-2 rounded-xl text-sm transition-colors flex items-center justify-between",
                         isActive
                           ? "bg-primary/10 text-primary font-medium"
                           : isComplete
@@ -1184,7 +1184,7 @@ function SidebarStep({
     <button
       onClick={onClick}
       className={cn(
-        "w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left",
+        "w-full flex items-center gap-3 p-3 rounded-xl transition-colors text-left",
         isActive
           ? "bg-primary/10 text-primary"
           : isComplete
@@ -1379,7 +1379,7 @@ function OrgDetailsStep({
           <p className="text-sm text-muted-foreground">Primary contact and admin credentials</p>
         </div>
         
-        <div className="p-3 bg-muted/50 rounded-lg border border-border">
+        <div className="p-3 bg-muted/50 rounded-xl border border-border">
           <p className="text-sm text-muted-foreground flex items-center gap-2">
             <Users className="h-4 w-4" />
             Root user will be the primary contact
@@ -1582,7 +1582,7 @@ function ModuleConfigStep({
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
                   <Shield className="h-5 w-5 text-primary" />
                 </div>
                 <div>
@@ -1598,7 +1598,7 @@ function ModuleConfigStep({
                 <label
                   key={journey.id}
                   className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                    "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors",
                     journey.enabled
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-muted-foreground"
@@ -1623,7 +1623,7 @@ function ModuleConfigStep({
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
                   <ScanFace className="h-5 w-5 text-primary" />
                 </div>
                 <div>
@@ -1639,7 +1639,7 @@ function ModuleConfigStep({
                 <label
                   key={service.id}
                   className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                    "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors",
                     service.enabled
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-muted-foreground"
@@ -1664,7 +1664,7 @@ function ModuleConfigStep({
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
                   <FileText className="h-5 w-5 text-primary" />
                 </div>
                 <div>
@@ -1680,7 +1680,7 @@ function ModuleConfigStep({
                 <label
                   key={service.id}
                   className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                    "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors",
                     service.enabled
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-muted-foreground"
@@ -1706,7 +1706,7 @@ function ModuleConfigStep({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Users className="h-5 w-5 text-primary" />
               </div>
               <div>
@@ -1720,7 +1720,7 @@ function ModuleConfigStep({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <label
               className={cn(
-                "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors",
                 data.modules.additional.populationMigration
                   ? "border-primary bg-primary/5"
                   : "border-border hover:border-muted-foreground"
@@ -1743,7 +1743,7 @@ function ModuleConfigStep({
             </label>
             <label
               className={cn(
-                "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors",
                 data.modules.additional.biometricVerification
                   ? "border-primary bg-primary/5"
                   : "border-border hover:border-muted-foreground"
@@ -1809,7 +1809,7 @@ function ModuleConfigStep({
                   <label
                     key={module.id}
                     className={cn(
-                      "flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors text-sm",
+                      "flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition-colors text-sm",
                       module.enabled
                         ? "border-primary bg-primary/5"
                         : "border-border hover:border-muted-foreground"
@@ -1977,7 +1977,7 @@ function ServiceConfigStep({
 
           {/* API Based */}
           <div className={cn(
-            "p-4 rounded-lg border space-y-4",
+            "p-4 rounded-xl border space-y-4",
             validationConfig.apiBased.enabled ? "border-primary bg-primary/5" : "border-border"
           )}>
             <div className="flex items-center justify-between">
@@ -2037,7 +2037,7 @@ function ServiceConfigStep({
 
           {/* Batch Processing */}
           <div className={cn(
-            "p-4 rounded-lg border space-y-4",
+            "p-4 rounded-xl border space-y-4",
             validationConfig.batchProcessing.enabled ? "border-primary bg-primary/5" : "border-border"
           )}>
             <div className="flex items-center justify-between">
@@ -2199,7 +2199,7 @@ function ServiceConfigStep({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Emirates ID */}
             <div className={cn(
-              "p-4 rounded-lg border",
+              "p-4 rounded-xl border",
               authConfig.documentsAllowed?.emiratesId?.enabled ? "border-primary bg-primary/5" : "border-border"
             )}>
               <div className="flex items-center justify-between mb-3">
@@ -2237,7 +2237,7 @@ function ServiceConfigStep({
 
             {/* Passport */}
             <div className={cn(
-              "p-4 rounded-lg border",
+              "p-4 rounded-xl border",
               authConfig.documentsAllowed?.passport?.enabled ? "border-primary bg-primary/5" : "border-border"
             )}>
               <div className="flex items-center justify-between mb-3">
@@ -2275,7 +2275,7 @@ function ServiceConfigStep({
 
             {/* GCC ID */}
             <div className={cn(
-              "p-4 rounded-lg border",
+              "p-4 rounded-xl border",
               authConfig.documentsAllowed?.gccId?.enabled ? "border-primary bg-primary/5" : "border-border"
             )}>
               <div className="flex items-center justify-between mb-3">
@@ -2318,7 +2318,7 @@ function ServiceConfigStep({
           <h3 className="font-semibold">Verification Methods</h3>
           <div className="flex flex-wrap gap-4">
             <label className={cn(
-              "flex items-center gap-3 p-4 rounded-lg border cursor-pointer",
+              "flex items-center gap-3 p-4 rounded-xl border cursor-pointer",
               authConfig.verificationMethods?.faceRecognition ? "border-primary bg-primary/5" : "border-border"
             )}>
               <Checkbox
@@ -2333,7 +2333,7 @@ function ServiceConfigStep({
               </div>
             </label>
             <label className={cn(
-              "flex items-center gap-3 p-4 rounded-lg border cursor-pointer",
+              "flex items-center gap-3 p-4 rounded-xl border cursor-pointer",
               authConfig.verificationMethods?.fingerprint ? "border-primary bg-primary/5" : "border-border"
             )}>
               <Checkbox
@@ -2355,7 +2355,7 @@ function ServiceConfigStep({
           <h3 className="font-semibold">Delivery Channels</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <label className={cn(
-              "flex items-center gap-3 p-4 rounded-lg border cursor-pointer",
+              "flex items-center gap-3 p-4 rounded-xl border cursor-pointer",
               authConfig.deliveryChannels?.sdk ? "border-primary bg-primary/5" : "border-border"
             )}>
               <Checkbox
@@ -2370,7 +2370,7 @@ function ServiceConfigStep({
               </div>
             </label>
             <label className={cn(
-              "flex items-center gap-3 p-4 rounded-lg border cursor-pointer",
+              "flex items-center gap-3 p-4 rounded-xl border cursor-pointer",
               authConfig.deliveryChannels?.remoteLink ? "border-primary bg-primary/5" : "border-border"
             )}>
               <Checkbox
@@ -2385,7 +2385,7 @@ function ServiceConfigStep({
               </div>
             </label>
             <label className={cn(
-              "flex items-center gap-3 p-4 rounded-lg border cursor-pointer",
+              "flex items-center gap-3 p-4 rounded-xl border cursor-pointer",
               authConfig.deliveryChannels?.headless ? "border-primary bg-primary/5" : "border-border"
             )}>
               <Checkbox
@@ -2416,7 +2416,7 @@ function ServiceConfigStep({
 
           <div className="space-y-2">
             {Object.entries(RESPONSE_TEMPLATE_FIELDS).map(([category, fields]) => (
-              <div key={category} className="border rounded-lg">
+              <div key={category} className="border rounded-xl">
                 <button
                   onClick={() => setAuthExpandedTemplates(prev => ({ ...prev, [category]: !prev[category] }))}
                   className="w-full flex items-center justify-between p-3 text-left"
@@ -2554,7 +2554,7 @@ function ServiceConfigStep({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Emirates ID */}
           <div className={cn(
-            "p-4 rounded-lg border",
+            "p-4 rounded-xl border",
             config.documentsAllowed.emiratesId.enabled ? "border-primary bg-primary/5" : "border-border"
           )}>
             <div className="flex items-center justify-between mb-3">
@@ -2592,7 +2592,7 @@ function ServiceConfigStep({
 
           {/* Passport */}
           <div className={cn(
-            "p-4 rounded-lg border",
+            "p-4 rounded-xl border",
             config.documentsAllowed.passport.enabled ? "border-primary bg-primary/5" : "border-border"
           )}>
             <div className="flex items-center justify-between mb-3">
@@ -2630,7 +2630,7 @@ function ServiceConfigStep({
 
           {/* GCC ID */}
           <div className={cn(
-            "p-4 rounded-lg border",
+            "p-4 rounded-xl border",
             config.documentsAllowed.gccId.enabled ? "border-primary bg-primary/5" : "border-border"
           )}>
             <div className="flex items-center justify-between mb-3">
@@ -2673,7 +2673,7 @@ function ServiceConfigStep({
         <h3 className="font-semibold">Verification Methods</h3>
         <div className="flex flex-wrap gap-4">
           <label className={cn(
-            "flex items-center gap-3 p-4 rounded-lg border cursor-pointer",
+            "flex items-center gap-3 p-4 rounded-xl border cursor-pointer",
             config.verificationMethods.faceRecognition ? "border-primary bg-primary/5" : "border-border"
           )}>
             <Checkbox
@@ -2688,7 +2688,7 @@ function ServiceConfigStep({
             </div>
           </label>
           <label className={cn(
-            "flex items-center gap-3 p-4 rounded-lg border cursor-pointer",
+            "flex items-center gap-3 p-4 rounded-xl border cursor-pointer",
             config.verificationMethods.fingerprint ? "border-primary bg-primary/5" : "border-border"
           )}>
             <Checkbox
@@ -2710,7 +2710,7 @@ function ServiceConfigStep({
         <h3 className="font-semibold">Delivery Channels</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <label className={cn(
-            "flex items-start gap-3 p-4 rounded-lg border cursor-pointer",
+            "flex items-start gap-3 p-4 rounded-xl border cursor-pointer",
             config.deliveryChannels.sdk ? "border-primary bg-primary/5" : "border-border"
           )}>
             <Checkbox
@@ -2729,7 +2729,7 @@ function ServiceConfigStep({
             </div>
           </label>
           <label className={cn(
-            "flex items-start gap-3 p-4 rounded-lg border cursor-pointer",
+            "flex items-start gap-3 p-4 rounded-xl border cursor-pointer",
             config.deliveryChannels.remoteLink ? "border-primary bg-primary/5" : "border-border"
           )}>
             <Checkbox
@@ -2748,7 +2748,7 @@ function ServiceConfigStep({
             </div>
           </label>
           <label className={cn(
-            "flex items-start gap-3 p-4 rounded-lg border cursor-pointer",
+            "flex items-start gap-3 p-4 rounded-xl border cursor-pointer",
             config.deliveryChannels.headless ? "border-primary bg-primary/5" : "border-border"
           )}>
             <Checkbox
@@ -2783,7 +2783,7 @@ function ServiceConfigStep({
             const isExpanded = expandedTemplates[category];
             
             return (
-              <div key={category} className="border border-border rounded-lg overflow-hidden">
+              <div key={category} className="border border-border rounded-xl overflow-hidden">
                 <button
                   onClick={() => setExpandedTemplates(prev => ({ ...prev, [category]: !prev[category] }))}
                   className="w-full flex items-center justify-between p-3 hover:bg-muted/50"
@@ -3036,7 +3036,7 @@ function FeaturesStep({
           {features.map(feature => (
             <div
               key={feature.key}
-              className="flex items-center justify-between p-4 rounded-lg border border-border"
+              className="flex items-center justify-between p-4 rounded-xl border border-border"
             >
               <div>
                 <p className="font-medium">{feature.label}</p>
