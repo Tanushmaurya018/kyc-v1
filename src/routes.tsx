@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Layout } from '@/components/layout';
 import LoginPage from '@/pages/Login';
+import ErrorPage from '@/pages/ErrorPage';
 
 // Dash pages
 import {
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
   {
     path: '/dash',
     element: <Layout mode="dash" />,
+    errorElement: <ErrorPage />,
     children: [
       {
         index: true,
@@ -71,6 +73,7 @@ export const router = createBrowserRouter([
   {
     path: '/console',
     element: <Layout mode="console" />,
+    errorElement: <ErrorPage />,
     children: [
       {
         index: true,
@@ -97,5 +100,10 @@ export const router = createBrowserRouter([
         element: <OnboardClientPage />,
       },
     ],
+  },
+  // Catch-all: redirect unknown routes to login
+  {
+    path: '*',
+    element: <Navigate to="/login" replace />,
   },
 ]);
