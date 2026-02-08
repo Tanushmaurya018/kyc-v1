@@ -1544,18 +1544,16 @@ function ModuleConfigStep({
     });
   };
 
-  const toggleAllAPIModules = (enabled: boolean) => {
+  const toggleAllAPIModules = (enabled: boolean, disableSection = false) => {
     const modules = data.modules.api.modules.map(m => ({ ...m, enabled }));
     setData({
       ...data,
       modules: {
         ...data.modules,
-        api: { ...data.modules.api, enabled, modules }
+        api: { ...data.modules.api, enabled: disableSection ? false : data.modules.api.enabled, modules }
       }
     });
   };
-
-  const [showAPIModules, setShowAPIModules] = useState(false);
 
   return (
     <div className="space-y-8">
@@ -1769,64 +1767,74 @@ function ModuleConfigStep({
       </Card>
 
       {/* API Modules */}
-      <div className="space-y-4">
-        <button
-          onClick={() => setShowAPIModules(!showAPIModules)}
-          className="flex items-center justify-between w-full"
-        >
-          <div>
-            <h3 className="text-lg font-semibold">API Modules</h3>
-            <p className="text-sm text-muted-foreground">
-              {totalSelectedAPIModules}/{data.modules.api.modules.length} Individual API endpoints
-            </p>
+      <Card className={cn(!data.modules.api.enabled && "opacity-60")}>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Code className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-base">API Modules</CardTitle>
+                <CardDescription>
+                  {totalSelectedAPIModules}/{data.modules.api.modules.length} Individual API endpoints
+                </CardDescription>
+              </div>
+            </div>
+            <Switch
+              checked={data.modules.api.enabled}
+              onCheckedChange={(checked) => {
+                if (!checked) {
+                  toggleAllAPIModules(false, true);
+                } else {
+                  setData({
+                    ...data,
+                    modules: {
+                      ...data.modules,
+                      api: { ...data.modules.api, enabled: true }
+                    }
+                  });
+                }
+              }}
+            />
           </div>
-          {showAPIModules ? (
-            <ChevronUp className="h-5 w-5 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-5 w-5 text-muted-foreground" />
-          )}
-        </button>
-
-        {showAPIModules && (
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Switch
-                    checked={data.modules.api.modules.every(m => m.enabled)}
-                    onCheckedChange={(checked) => toggleAllAPIModules(checked)}
+        </CardHeader>
+        {data.modules.api.enabled && (
+          <CardContent className="pt-0 space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <Checkbox
+                  checked={data.modules.api.modules.every(m => m.enabled)}
+                  onCheckedChange={(checked) => toggleAllAPIModules(!!checked)}
+                />
+                <span className="text-sm font-medium">Select All</span>
+              </label>
+              <span className="text-sm text-muted-foreground">
+                {totalSelectedAPIModules} selected
+              </span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {data.modules.api.modules.map(module => (
+                <label
+                  key={module.id}
+                  className={cn(
+                    "flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition-colors text-sm",
+                    module.enabled
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-muted-foreground"
+                  )}
+                >
+                  <Checkbox
+                    checked={module.enabled}
+                    onCheckedChange={() => toggleAPIModule(module.id)}
                   />
-                  <span className="text-sm font-medium">Select All</span>
-                </div>
-                <span className="text-sm text-muted-foreground">
-                  {totalSelectedAPIModules} selected
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {data.modules.api.modules.map(module => (
-                  <label
-                    key={module.id}
-                    className={cn(
-                      "flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition-colors text-sm",
-                      module.enabled
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-muted-foreground"
-                    )}
-                  >
-                    <Checkbox
-                      checked={module.enabled}
-                      onCheckedChange={() => toggleAPIModule(module.id)}
-                    />
-                    <span className="truncate">{module.name}</span>
-                  </label>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  <span className="truncate">{module.name}</span>
+                </label>
+              ))}
+            </div>
+          </CardContent>
         )}
-      </div>
+      </Card>
 
       <div className="flex justify-between pt-6 border-t border-border">
         <Button variant="outline" onClick={onBack}>

@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui';
-import { Button, Input, Label, Checkbox } from '@/components/ui';
+import { Button, Input, Label, Checkbox, Switch } from '@/components/ui';
 
 // Stub data for available modules - in production, this would come from the organization's onboarding config
 const AVAILABLE_MODULES = [
@@ -143,8 +143,24 @@ export function CreateKeyModal({ open, onOpenChange, onSubmit, createdKey }: Cre
           </div>
 
           <div>
-            <Label>Enabled Modules</Label>
-            <div className="mt-3 grid grid-cols-2 gap-3">
+            <div className="flex items-center justify-between mb-3">
+              <Label>Enabled Modules</Label>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">
+                  {selectedModules.length} selected
+                </span>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={selectedModules.length === AVAILABLE_MODULES.length}
+                    onCheckedChange={(checked) => {
+                      setSelectedModules(checked ? AVAILABLE_MODULES.map(m => m.id) : []);
+                    }}
+                  />
+                  <span className="text-sm font-medium">Select All</span>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               {AVAILABLE_MODULES.map((module) => (
                 <label
                   key={module.id}
