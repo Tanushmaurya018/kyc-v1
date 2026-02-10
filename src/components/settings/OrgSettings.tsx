@@ -1,6 +1,16 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
-import { Button, Input, Label, Switch } from '@/components/ui';
+import { useState, useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Button,
+  Input,
+  Label,
+  Textarea,
+} from '@/components/ui';
 import {
   Select,
   SelectContent,
@@ -8,77 +18,217 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui';
-import { Separator } from '@/components/ui';
-import type { OrgSettings } from '@/types';
+import {
+  getOrgTypes,
+  getCountries,
+  updateOrg,
+  FALLBACK_ORG_TYPES,
+  FALLBACK_COUNTRIES,
+  type OrgDetail,
+  type OrgType,
+  type Country,
+  type UpdateOrgPayload,
+} from '@/services/org-api';
+import { toast } from 'sonner';
 
 interface OrgSettingsFormProps {
-  settings: OrgSettings;
-  onSave: (settings: OrgSettings) => void;
+  org: OrgDetail;
+  editable?: boolean;
 }
 
-const timezones = [
-  'Asia/Dubai',
-  'Asia/Abu_Dhabi',
-  'Asia/Riyadh',
-  'Asia/Qatar',
-  'Asia/Kuwait',
-  'Asia/Bahrain',
-  'UTC',
-];
+export function OrgSettingsForm({ org, editable = true }: OrgSettingsFormProps) {
+  // Reference data
+  const [orgTypes, setOrgTypes] = useState<OrgType[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [refLoading, setRefLoading] = useState(true);
 
-export function OrgSettingsForm({ settings, onSave }: OrgSettingsFormProps) {
-  const [formData, setFormData] = useState<OrgSettings>(settings);
-  const [webhookTesting, setWebhookTesting] = useState(false);
+  // Form fields
+  const [companyName, setCompanyName] = useState(org.company_name);
+  const [orgTypeId, setOrgTypeId] = useState('');
+  const [email, setEmail] = useState(org.email);
+  const [phone, setPhone] = useState(org.phone ?? '');
+  const [address, setAddress] = useState(org.address ?? '');
+  const [city, setCity] = useState(org.city ?? '');
+  const [countryId, setCountryId] = useState('');
+  const [primaryContactName, setPrimaryContactName] = useState(org.primary_contact_name ?? '');
+  const [primaryContactEmail, setPrimaryContactEmail] = useState(org.primary_contact_email ?? '');
+  const [additionalInfo, setAdditionalInfo] = useState(org.additional_information ?? '');
 
-  const handleChange = <K extends keyof OrgSettings>(key: K, value: OrgSettings[K]) => {
-    setFormData(prev => ({ ...prev, [key]: value }));
+  const [saving, setSaving] = useState(false);
+
+  // Fetch org types & countries, resolve initial IDs from names
+  useEffect(() => {
+    Promise.all([
+      getOrgTypes().catch(() => FALLBACK_ORG_TYPES),
+      getCountries().catch(() => FALLBACK_COUNTRIES),
+    ]).then(([types, ctrs]) => {
+      setOrgTypes(types);
+      setCountries(ctrs);
+
+      const matchedType = types.find(
+        (t) => t.name.toLowerCase() === org.org_type?.toLowerCase()
+      );
+      if (matchedType) setOrgTypeId(matchedType.id);
+
+      const matchedCountry = ctrs.find(
+        (c) => c.name.toLowerCase() === org.country_name?.toLowerCase()
+      );
+      if (matchedCountry) setCountryId(matchedCountry.id);
+
+      setRefLoading(false);
+    });
+  }, [org.org_type, org.country_name]);
+
+  const formValid =
+    companyName.trim() !== '' &&
+    orgTypeId !== '' &&
+    email.trim() !== '' &&
+    primaryContactName.trim() !== '' &&
+    primaryContactEmail.trim() !== '';
+
+  const handleSave = async () => {
+    if (!formValid) return;
+    setSaving(true);
+    try {
+      const payload: UpdateOrgPayload = {
+        companyName: companyName.trim(),
+        orgTypeId,
+        email: email.trim(),
+        phone: phone.trim() || undefined,
+        address: address.trim() || undefined,
+        city: city.trim() || undefined,
+        countryId: countryId || undefined,
+        primaryContactName: primaryContactName.trim(),
+        primaryContactEmail: primaryContactEmail.trim(),
+        additionalInformation: additionalInfo.trim() || undefined,
+        sandboxMode: org.sandbox_mode,
+        digitization: org.digitization,
+        continuousDigitization: org.continuous_digitization,
+        nonVisitorOnboarding: org.non_visitor_onboarding,
+        nfcVerification: org.nfc_verification,
+        watermarkNoiseCompress: org.watermark_noise_compress,
+        proactiveMonitoring: org.proactive_monitoring,
+        generateCertificate: org.generate_certificate,
+        eligibleForFinance: org.eligible_for_finance,
+        enableGlobalOneToManySearch: org.enable_global_one_to_many_search,
+        allowNonOnboardedVerification: org.allow_non_onboarded_verification,
+        documentsAllowed: org.documents_allowed,
+        enabled_transaction_types: org.enabled_transaction_types,
+        responseTemplate: (org.response_template as Record<string, unknown>) ?? {},
+      };
+      await updateOrg(org.id, payload);
+      toast.success('Settings saved successfully');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(formData);
-  };
-
-  const testWebhook = async () => {
-    if (!formData.webhookUrl) return;
-    setWebhookTesting(true);
-    // Simulate webhook test
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setWebhookTesting(false);
-    alert('Webhook test sent successfully!');
-  };
+  if (refLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Organization Details */}
+    <div className="space-y-6">
+      {/* Organization Info */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Organization</CardTitle>
-          <CardDescription>Basic organization settings</CardDescription>
+          <CardDescription>Company details</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="orgName">Organization Name</Label>
+              <Label htmlFor="s-name">Company Name *</Label>
               <Input
-                id="orgName"
-                value={formData.orgName}
-                onChange={(e) => handleChange('orgName', e.target.value)}
+                id="s-name"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                disabled={!editable}
                 className="mt-1"
               />
             </div>
             <div>
-              <Label htmlFor="timezone">Timezone</Label>
-              <Select 
-                value={formData.timezone} 
-                onValueChange={(v) => handleChange('timezone', v)}
-              >
+              <Label htmlFor="s-type">Organization Type *</Label>
+              <Select value={orgTypeId} onValueChange={setOrgTypeId} disabled={!editable}>
                 <SelectTrigger className="mt-1">
-                  <SelectValue />
+                  <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {timezones.map(tz => (
-                    <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+                  {orgTypes.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="s-email">Email *</Label>
+              <Input
+                id="s-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={!editable}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="s-phone">Phone</Label>
+              <Input
+                id="s-phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                disabled={!editable}
+                className="mt-1"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Address */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Address</CardTitle>
+          <CardDescription>Organization location</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="s-address">Address</Label>
+            <Input
+              id="s-address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              disabled={!editable}
+              className="mt-1"
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="s-city">City</Label>
+              <Input
+                id="s-city"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                disabled={!editable}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="s-country">Country</Label>
+              <Select value={countryId} onValueChange={setCountryId} disabled={!editable}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select country" />
+                </SelectTrigger>
+                <SelectContent>
+                  {countries.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -87,128 +237,58 @@ export function OrgSettingsForm({ settings, onSave }: OrgSettingsFormProps) {
         </CardContent>
       </Card>
 
-      {/* Session Defaults */}
+      {/* Primary Contact */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Session Defaults</CardTitle>
-          <CardDescription>Default settings for new signing sessions</CardDescription>
+          <CardTitle className="text-base">Primary Contact</CardTitle>
+          <CardDescription>Main point of contact</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="sessionTtl">Session TTL (hours)</Label>
+              <Label htmlFor="s-pc-name">Name *</Label>
               <Input
-                id="sessionTtl"
-                type="number"
-                min={1}
-                max={168}
-                value={formData.sessionTtlHours}
-                onChange={(e) => handleChange('sessionTtlHours', parseInt(e.target.value))}
+                id="s-pc-name"
+                value={primaryContactName}
+                onChange={(e) => setPrimaryContactName(e.target.value)}
+                disabled={!editable}
                 className="mt-1"
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Sessions expire after this duration
-              </p>
             </div>
             <div>
-              <Label htmlFor="maxFileSize">Max File Size (MB)</Label>
+              <Label htmlFor="s-pc-email">Email *</Label>
               <Input
-                id="maxFileSize"
-                type="number"
-                min={1}
-                max={100}
-                value={formData.maxFileSizeMb}
-                onChange={(e) => handleChange('maxFileSizeMb', parseInt(e.target.value))}
+                id="s-pc-email"
+                type="email"
+                value={primaryContactEmail}
+                onChange={(e) => setPrimaryContactEmail(e.target.value)}
+                disabled={!editable}
                 className="mt-1"
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Maximum document size allowed
-              </p>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Webhooks */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Webhooks</CardTitle>
-          <CardDescription>Receive real-time notifications for session events</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="webhookUrl">Webhook URL</Label>
-            <div className="flex gap-2 mt-1">
-              <Input
-                id="webhookUrl"
-                type="url"
-                placeholder="https://your-server.com/webhooks/facesign"
-                value={formData.webhookUrl || ''}
-                onChange={(e) => handleChange('webhookUrl', e.target.value)}
-                className="flex-1"
-              />
-              <Button 
-                type="button" 
-                variant="outline"
-                onClick={testWebhook}
-                disabled={!formData.webhookUrl || webhookTesting}
-              >
-                {webhookTesting ? 'Testing...' : 'Test'}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Email Notifications</CardTitle>
-          <CardDescription>Configure email notification preferences</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label>Email Notifications</Label>
-              <p className="text-sm text-muted-foreground">Receive email notifications for session events</p>
-            </div>
-            <Switch
-              checked={formData.emailNotifications}
-              onCheckedChange={(v) => handleChange('emailNotifications', v)}
-            />
-          </div>
-          
-          <Separator />
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <Label>Notify on Completion</Label>
-              <p className="text-sm text-muted-foreground">Send email when a contract is signed</p>
-            </div>
-            <Switch
-              checked={formData.notifyOnComplete}
-              onCheckedChange={(v) => handleChange('notifyOnComplete', v)}
-              disabled={!formData.emailNotifications}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <Label>Notify on Rejection</Label>
-              <p className="text-sm text-muted-foreground">Send email when KYC verification fails</p>
-            </div>
-            <Switch
-              checked={formData.notifyOnReject}
-              onCheckedChange={(v) => handleChange('notifyOnReject', v)}
-              disabled={!formData.emailNotifications}
+            <Label htmlFor="s-addl-info">Additional Information</Label>
+            <Textarea
+              id="s-addl-info"
+              value={additionalInfo}
+              onChange={(e) => setAdditionalInfo(e.target.value)}
+              disabled={!editable}
+              rows={3}
+              className="mt-1"
             />
           </div>
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
-        <Button type="submit">Save Changes</Button>
-      </div>
-    </form>
+      {editable && (
+        <div className="flex justify-end">
+          <Button onClick={handleSave} disabled={!formValid || saving}>
+            {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+            Save Changes
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }

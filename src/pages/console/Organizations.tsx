@@ -1,32 +1,31 @@
 import { useState } from 'react';
-import { Building2, Search, Users, FileText, Coins, Plus } from 'lucide-react';
+import { Building2, Search, Plus, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle, 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
   Input,
-  Badge,
   Button,
 } from '@/components/ui';
-import { organizations, contracts, getAllUsers, getBillingDataByOrgId } from '@/data';
-import { formatNumber } from '@/lib/utils';
+import { useOrganizations } from '@/hooks';
 import { format } from 'date-fns';
 
 export default function OrganizationsPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const { orgs, isLoading } = useOrganizations();
 
-  const filteredOrgs = organizations.filter(org => 
-    org.name.toLowerCase().includes(search.toLowerCase())
+  const filteredOrgs = orgs.filter(org =>
+    org.company_name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search organizations..."
             value={search}
@@ -43,83 +42,53 @@ export default function OrganizationsPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredOrgs.map(org => {
-          const orgContracts = contracts.filter(c => c.orgId === org.id);
-          const allUsers = getAllUsers();
-          const orgUsers = allUsers.filter(u => u.orgId === org.id);
-          const billing = getBillingDataByOrgId(org.id);
-          const signedCount = orgContracts.filter(c => c.status === 'SIGNED').length;
-          const completionRate = orgContracts.length > 0 
-            ? ((signedCount / orgContracts.length) * 100).toFixed(1) 
-            : '0';
-
-          return (
-            <Card 
-              key={org.id} 
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredOrgs.map(org => (
+            <Card
+              key={org.id}
               className="cursor-pointer hover:border-muted-foreground transition-colors"
               onClick={() => navigate(`/console/organizations/${org.id}`)}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    {org.logoUrl ? (
-                      <img 
-                        src={org.logoUrl} 
-                        alt={org.name} 
-                        className="h-10 w-10 object-contain"
-                      />
-                    ) : (
-                      <div className="h-10 w-10 bg-muted rounded-xl flex items-center justify-center">
-                        <Building2 className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                    )}
+                    <div className="h-10 w-10 bg-muted rounded-xl flex items-center justify-center">
+                      <Building2 className="h-5 w-5 text-muted-foreground" />
+                    </div>
                     <div>
-                      <CardTitle className="text-sm font-semibold">{org.name}</CardTitle>
-                      <p className="text-xs text-muted-foreground">{org.industry}</p>
+                      <CardTitle className="text-sm font-semibold">{org.company_name}</CardTitle>
+                      {org.org_type && (
+                        <p className="text-xs text-muted-foreground capitalize">{org.org_type}</p>
+                      )}
                     </div>
                   </div>
-                  <Badge variant={org.status === 'ACTIVE' ? 'default' : 'secondary'}>
-                    {org.status}
-                  </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                    <span>{orgContracts.length} contracts</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <span>{orgUsers.length} users</span>
-                  </div>
-                </div>
-                
+              <CardContent>
                 <div className="text-xs text-muted-foreground space-y-1">
-                  <div className="flex justify-between">
-                    <span>Completion Rate</span>
-                    <span className="font-medium text-foreground">{completionRate}%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="flex items-center gap-1">
-                      <Coins className="h-3 w-3" />
-                      Credits
-                    </span>
-                    <span className="font-medium text-foreground">
-                      {billing ? formatNumber(billing.credits.available) : '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Joined</span>
-                    <span>{format(org.createdAt, 'MMM d, yyyy')}</span>
-                  </div>
+                  {org.city && org.country_name && (
+                    <div className="flex justify-between">
+                      <span>Location</span>
+                      <span className="font-medium text-foreground">{org.city}, {org.country_name}</span>
+                    </div>
+                  )}
+                  {org.created_at && (
+                    <div className="flex justify-between">
+                      <span>Joined</span>
+                      <span>{format(new Date(org.created_at), 'MMM d, yyyy')}</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

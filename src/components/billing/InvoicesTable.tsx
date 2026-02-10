@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { ExternalLink } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -8,21 +7,22 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  Button,
   TablePagination,
 } from '@/components/ui';
 import { formatNumber } from '@/lib/utils';
-import type { TopUpTransaction, UsageTransaction } from '@/types';
+import type { OrgCreditTopUp } from '@/services/org-api';
+
+// ── Top-Up History ────────────────────────────────────────────────────
 
 interface TopUpHistoryTableProps {
-  transactions: TopUpTransaction[];
+  topUps: OrgCreditTopUp[];
 }
 
-export function TopUpHistoryTable({ transactions }: TopUpHistoryTableProps) {
+export function TopUpHistoryTable({ topUps }: TopUpHistoryTableProps) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  if (transactions.length === 0) {
+  if (topUps.length === 0) {
     return (
       <div className="text-center py-12 rounded-md border border-border bg-card">
         <p className="text-muted-foreground">No top-up history</p>
@@ -30,8 +30,8 @@ export function TopUpHistoryTable({ transactions }: TopUpHistoryTableProps) {
     );
   }
 
-  const totalPages = Math.ceil(transactions.length / pageSize);
-  const paginatedTransactions = transactions.slice((page - 1) * pageSize, page * pageSize);
+  const totalPages = Math.ceil(topUps.length / pageSize);
+  const paginated = topUps.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div>
@@ -40,20 +40,22 @@ export function TopUpHistoryTable({ transactions }: TopUpHistoryTableProps) {
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead>Date</TableHead>
-              <TableHead>Credits Added</TableHead>
-              <TableHead>Added By</TableHead>
-              <TableHead>Reference</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Invoice</TableHead>
+              <TableHead className="text-right">Credits</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedTransactions.map((tx) => (
-              <TableRow key={tx.id}>
-                <TableCell>{format(tx.date, 'MMM d, yyyy')}</TableCell>
-                <TableCell className="font-medium text-chart-2">
-                  +{formatNumber(tx.credits)}
+            {paginated.map((t) => (
+              <TableRow key={t.id}>
+                <TableCell className="text-muted-foreground">
+                  {t.credit_date ? format(new Date(t.credit_date), 'MMM d, yyyy') : '—'}
                 </TableCell>
-                <TableCell>{tx.addedByName}</TableCell>
-                <TableCell className="text-muted-foreground">{tx.reference || '—'}</TableCell>
+                <TableCell>{t.description || '—'}</TableCell>
+                <TableCell className="text-muted-foreground">{t.invoice_id || '—'}</TableCell>
+                <TableCell className="text-right font-medium text-chart-2">
+                  +{formatNumber(t.credit_amount)}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -62,7 +64,7 @@ export function TopUpHistoryTable({ transactions }: TopUpHistoryTableProps) {
       <TablePagination
         currentPage={page}
         totalPages={totalPages}
-        totalItems={transactions.length}
+        totalItems={topUps.length}
         pageSize={pageSize}
         onPageChange={setPage}
         onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
@@ -72,68 +74,76 @@ export function TopUpHistoryTable({ transactions }: TopUpHistoryTableProps) {
   );
 }
 
-interface UsageHistoryTableProps {
-  transactions: UsageTransaction[];
+// ── Pricing Table ─────────────────────────────────────────────────────
+
+interface PricingTableProps {
+  prices: { price: string; name: string }[];
 }
 
-export function UsageHistoryTable({ transactions }: UsageHistoryTableProps) {
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  if (transactions.length === 0) {
-    return (
-      <div className="text-center py-12 rounded-md border border-border bg-card">
-        <p className="text-muted-foreground">No usage history</p>
-      </div>
-    );
-  }
-
-  const totalPages = Math.ceil(transactions.length / pageSize);
-  const paginatedTransactions = transactions.slice((page - 1) * pageSize, page * pageSize);
+export function PricingTable({ prices }: PricingTableProps) {
+  if (prices.length === 0) return null;
 
   return (
-    <div>
-      <div className="rounded-md border border-border overflow-hidden bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/50">
-              <TableHead>Date</TableHead>
-              <TableHead>Session ID</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Credits Used</TableHead>
-              <TableHead className="w-[100px]"></TableHead>
+    <div className="rounded-md border border-border overflow-hidden bg-card">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-muted/50">
+            <TableHead>Type</TableHead>
+            <TableHead className="text-right">Credits</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {prices.map((p) => (
+            <TableRow key={p.name}>
+              <TableCell className="capitalize">
+                {(p.name ?? '').toLowerCase().replace(/_/g, ' ')}
+              </TableCell>
+              <TableCell className="text-right">{p.price}</TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedTransactions.map((tx) => (
-              <TableRow key={tx.id}>
-                <TableCell>{format(tx.date, 'MMM d, yyyy HH:mm')}</TableCell>
-                <TableCell className="font-mono text-sm">{tx.sessionDisplayId}</TableCell>
-                <TableCell>{tx.type === 'FACE_SIGN' ? 'Face Sign' : 'KYC'}</TableCell>
-                <TableCell className="font-medium">-{tx.creditsUsed}</TableCell>
-                <TableCell>
-                  <Button variant="ghost" size="sm">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    View
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-      <TablePagination
-        currentPage={page}
-        totalPages={totalPages}
-        totalItems={transactions.length}
-        pageSize={pageSize}
-        onPageChange={setPage}
-        onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
-        itemLabel="transactions"
-      />
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }
 
-// Keep old name for backwards compatibility but export new components
-export { TopUpHistoryTable as InvoicesTable };
+// ── Usage Breakdown Table ─────────────────────────────────────────────
+
+interface UsageBreakdownTableProps {
+  creditUsed: Record<string, number>;
+}
+
+export function UsageBreakdownTable({ creditUsed }: UsageBreakdownTableProps) {
+  const entries = Object.entries(creditUsed).filter(([, v]) => v > 0);
+
+  if (entries.length === 0) {
+    return (
+      <div className="text-center py-12 rounded-md border border-border bg-card">
+        <p className="text-muted-foreground">No usage data</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-md border border-border overflow-hidden bg-card">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-muted/50">
+            <TableHead>Type</TableHead>
+            <TableHead className="text-right">Credits Used</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {entries.map(([type, count]) => (
+            <TableRow key={type}>
+              <TableCell className="capitalize">
+                {type.toLowerCase().replace(/_/g, ' ')}
+              </TableCell>
+              <TableCell className="text-right font-medium">{formatNumber(count)}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}

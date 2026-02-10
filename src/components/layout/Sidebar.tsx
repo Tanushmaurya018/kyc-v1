@@ -23,7 +23,8 @@ import {
   PopoverContent,
   Separator,
 } from '@/components/ui';
-import { currentUser, organizations } from '@/data';
+import { currentUser } from '@/data';
+import { useOrganizations } from '@/hooks';
 import { roleLabels } from '@/types/user';
 
 interface SidebarProps {
@@ -43,7 +44,7 @@ const dashNavItems: { section: string; items: NavItem[] }[] = [
     section: 'MAIN',
     items: [
       { label: 'Dashboard', href: '/dash', icon: LayoutDashboard },
-      { label: 'Contracts', href: '/dash/contracts', icon: FileText },
+      { label: 'Sessions', href: '/dash/sessions', icon: FileText },
     ],
   },
   {
@@ -67,7 +68,7 @@ const consoleNavItems: { section: string; items: NavItem[] }[] = [
     section: 'MAIN',
     items: [
       { label: 'Dashboard', href: '/console', icon: LayoutDashboard },
-      { label: 'Contracts', href: '/console/contracts', icon: FileText },
+      { label: 'Sessions', href: '/console/sessions', icon: FileText },
     ],
   },
 ];
@@ -75,6 +76,7 @@ const consoleNavItems: { section: string; items: NavItem[] }[] = [
 export function Sidebar({ collapsed, onToggle, isConsole }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { orgs } = useOrganizations();
   const navItems = isConsole ? consoleNavItems : dashNavItems;
 
   const isActive = (href: string) => {
@@ -158,10 +160,10 @@ export function Sidebar({ collapsed, onToggle, isConsole }: SidebarProps) {
               </button>
             </div>
             <ul className="space-y-1 px-2">
-              {organizations.map((org) => {
+              {orgs.map((org) => {
                 const orgHref = `/console/organizations/${org.id}`;
                 const orgActive = location.pathname === orgHref;
-                const initials = org.name.split(' ').map(w => w[0]).join('').slice(0, 2);
+                const initials = org.company_name.split(' ').map(w => w[0]).join('').slice(0, 2);
                 return (
                   <li key={org.id}>
                     <NavLink
@@ -173,7 +175,7 @@ export function Sidebar({ collapsed, onToggle, isConsole }: SidebarProps) {
                           : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
                         collapsed && "justify-center px-2"
                       )}
-                      title={collapsed ? org.name : undefined}
+                      title={collapsed ? org.company_name : undefined}
                     >
                       <div className={cn(
                         "h-5 w-5 rounded-md bg-muted flex items-center justify-center flex-shrink-0",
@@ -182,7 +184,7 @@ export function Sidebar({ collapsed, onToggle, isConsole }: SidebarProps) {
                         <span className="text-[10px] font-semibold text-muted-foreground">{initials}</span>
                       </div>
                       {!collapsed && (
-                        <span className="truncate">{org.name}</span>
+                        <span className="truncate">{org.company_name}</span>
                       )}
                     </NavLink>
                   </li>

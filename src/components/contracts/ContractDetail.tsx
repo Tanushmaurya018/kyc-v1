@@ -1,11 +1,12 @@
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { 
-  FileText, 
-  User, 
-  Shield, 
-  Clock, 
-  CheckCircle2, 
-  XCircle, 
+import {
+  FileText,
+  User,
+  Shield,
+  Clock,
+  CheckCircle2,
+  XCircle,
   AlertCircle,
   Copy,
   ArrowLeft,
@@ -13,13 +14,14 @@ import {
   Download,
   Eye,
   FileCheck,
+  Loader2,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Separator, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
 import { StatusBadge } from './StatusBadge';
-import { organizations } from '@/data';
 import type { Contract, ContractEvent } from '@/types';
 import { cn } from '@/lib/utils';
+import { fetchDocumentBlob } from '@/services/sessions-api';
 
 interface ContractDetailProps {
   contract: Contract;
@@ -82,11 +84,32 @@ function TimelineEvent({ event }: { event: ContractEvent }) {
   );
 }
 
-// Sample PDF URL for demo - using Mozilla's sample PDF
+// Fallback PDF URL for when no real document URL is available
 const SAMPLE_PDF_URL = 'https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf';
 
-// Document preview component with actual PDF embed
-function DocumentPreview({ documentName, isSigned, pageCount = 1 }: { documentName: string; isSigned?: boolean; pageCount?: number }) {
+// Document preview component with authenticated PDF fetch
+function DocumentPreview({ documentName, sessionId, docType, isSigned, pageCount = 1 }: { documentName: string; sessionId?: string; docType?: 'original' | 'signed'; isSigned?: boolean; pageCount?: number }) {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (!sessionId || !docType) return;
+    let revoke: string | null = null;
+    setLoading(true);
+    setError(false);
+    fetchDocumentBlob(sessionId, docType)
+      .then((url) => {
+        revoke = url;
+        setBlobUrl(url);
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+    return () => { if (revoke) URL.revokeObjectURL(revoke); };
+  }, [sessionId, docType]);
+
+  const pdfUrl = blobUrl || (!sessionId ? SAMPLE_PDF_URL : null);
+
   return (
     <div className="border border-border rounded-xl bg-muted/30 overflow-hidden">
       {/* Document header */}
@@ -102,49 +125,57 @@ function DocumentPreview({ documentName, isSigned, pageCount = 1 }: { documentNa
           </Badge>
         )}
       </div>
-      
+
       {/* PDF Embed */}
       <div className="relative bg-background">
-        <object
-          data={`${SAMPLE_PDF_URL}#toolbar=0&navpanes=0&scrollbar=0`}
-          type="application/pdf"
-          className="w-full h-[600px]"
-        >
-          {/* Fallback for browsers that don't support PDF embed */}
+        {loading ? (
+          <div className="w-full h-[600px] flex items-center justify-center bg-muted/30">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : error || !pdfUrl ? (
           <div className="w-full h-[600px] flex flex-col items-center justify-center bg-muted/30 p-8">
             <FileText className="h-16 w-16 text-muted-foreground/30 mb-4" />
-            <p className="text-muted-foreground text-center mb-4">
-              PDF preview not available in this browser.
+            <p className="text-muted-foreground text-center">
+              {error ? 'Failed to load document.' : 'No document available.'}
             </p>
-            <a 
-              href={SAMPLE_PDF_URL} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary hover:underline text-sm"
-            >
-              Open PDF in new tab →
-            </a>
           </div>
-        </object>
-        
+        ) : (
+          <object
+            data={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+            type="application/pdf"
+            className="w-full h-[600px]"
+          >
+            <div className="w-full h-[600px] flex flex-col items-center justify-center bg-muted/30 p-8">
+              <FileText className="h-16 w-16 text-muted-foreground/30 mb-4" />
+              <p className="text-muted-foreground text-center mb-4">
+                PDF preview not available in this browser.
+              </p>
+            </div>
+          </object>
+        )}
+
         {/* Signed overlay indicator */}
-        {isSigned && (
+        {isSigned && !loading && !error && pdfUrl && (
           <div className="absolute bottom-4 right-4 bg-green-50 border-2 border-green-500 rounded-xl px-4 py-3 shadow-lg">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-600" />
               <div>
                 <p className="text-sm font-semibold text-green-700">Digitally Signed</p>
-                <p className="text-xs text-green-600">Face ID Verified • Feb 4, 2026</p>
+                <p className="text-xs text-green-600">Face ID Verified</p>
               </div>
             </div>
           </div>
         )}
       </div>
-      
+
       {/* Page indicator */}
       <div className="bg-background border-t border-border px-4 py-2 flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">{pageCount} page{pageCount > 1 ? 's' : ''}</span>
-        <span className="text-xs text-muted-foreground/70">Sample PDF for demonstration</span>
+        {pageCount > 0 ? (
+          <span className="text-xs text-muted-foreground">{pageCount} page{pageCount > 1 ? 's' : ''}</span>
+        ) : (
+          <span />
+        )}
+        {!sessionId && <span className="text-xs text-muted-foreground/70">Sample PDF for demonstration</span>}
       </div>
     </div>
   );
@@ -152,10 +183,22 @@ function DocumentPreview({ documentName, isSigned, pageCount = 1 }: { documentNa
 
 export function ContractDetail({ contract, basePath = '/dash', showOrg }: ContractDetailProps) {
   const navigate = useNavigate();
-  const org = organizations.find(o => o.id === contract.orgId);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
+  };
+
+  const handleDownload = async (sessionId: string, type: 'original' | 'signed', filename: string) => {
+    try {
+      const blobUrl = await fetchDocumentBlob(sessionId, type);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      // silently fail
+    }
   };
 
   return (
@@ -166,7 +209,7 @@ export function ContractDetail({ contract, basePath = '/dash', showOrg }: Contra
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(`${basePath}/contracts`)}
+            onClick={() => navigate(`${basePath}/sessions`)}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -179,12 +222,12 @@ export function ContractDetail({ contract, basePath = '/dash', showOrg }: Contra
               <p className="text-sm text-gray-500">
                 Created {format(contract.createdAt, 'MMMM d, yyyy \'at\' HH:mm')}
               </p>
-              {showOrg && org && (
+              {showOrg && contract.orgName && contract.orgName !== '—' && (
                 <>
                   <span className="text-gray-300">•</span>
                   <div className="flex items-center gap-1 text-sm text-gray-500">
                     <Building2 className="h-4 w-4" />
-                    <span>{org.name}</span>
+                    <span>{contract.orgName}</span>
                   </div>
                 </>
               )}
@@ -205,12 +248,14 @@ export function ContractDetail({ contract, basePath = '/dash', showOrg }: Contra
                   Document Preview
                 </span>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    <Download className="h-4 w-4 mr-2" />
-                    Original
-                  </Button>
-                  {contract.status === 'SIGNED' && (
-                    <Button size="sm">
+                  {contract.documentUrl && (
+                    <Button variant="outline" size="sm" onClick={() => handleDownload(contract.sessionId, 'original', contract.documentName)}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Original
+                    </Button>
+                  )}
+                  {contract.status === 'SIGNED' && contract.signedDocumentUrl && (
+                    <Button size="sm" onClick={() => handleDownload(contract.sessionId, 'signed', contract.documentName.replace('.pdf', '_signed.pdf'))}>
                       <FileCheck className="h-4 w-4 mr-2" />
                       Signed PDF
                     </Button>
@@ -226,22 +271,28 @@ export function ContractDetail({ contract, basePath = '/dash', showOrg }: Contra
                     <TabsTrigger value="original">Original Document</TabsTrigger>
                   </TabsList>
                   <TabsContent value="signed">
-                    <DocumentPreview 
-                      documentName={contract.documentName.replace('.pdf', '_signed.pdf')} 
-                      isSigned 
+                    <DocumentPreview
+                      documentName={contract.documentName.replace('.pdf', '_signed.pdf')}
+                      sessionId={contract.sessionId}
+                      docType="signed"
+                      isSigned
                       pageCount={contract.pageCount}
                     />
                   </TabsContent>
                   <TabsContent value="original">
-                    <DocumentPreview 
-                      documentName={contract.documentName} 
+                    <DocumentPreview
+                      documentName={contract.documentName}
+                      sessionId={contract.sessionId}
+                      docType="original"
                       pageCount={contract.pageCount}
                     />
                   </TabsContent>
                 </Tabs>
               ) : (
-                <DocumentPreview 
-                  documentName={contract.documentName} 
+                <DocumentPreview
+                  documentName={contract.documentName}
+                  sessionId={contract.sessionId}
+                  docType="original"
                   pageCount={contract.pageCount}
                 />
               )}
@@ -262,28 +313,34 @@ export function ContractDetail({ contract, basePath = '/dash', showOrg }: Contra
                   <p className="text-sm text-gray-500">File Name</p>
                   <p className="font-medium">{contract.documentName}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500">Pages</p>
-                  <p className="font-medium">{contract.pageCount}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">File Size</p>
-                  <p className="font-medium">{(contract.fileSizeKb / 1024).toFixed(2)} MB</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Document Hash</p>
-                  <div className="flex items-center gap-2">
-                    <p className="font-mono text-xs truncate max-w-[200px]">{contract.documentHash}</p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => copyToClipboard(contract.documentHash)}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
+                {contract.pageCount > 0 && (
+                  <div>
+                    <p className="text-sm text-gray-500">Pages</p>
+                    <p className="font-medium">{contract.pageCount}</p>
                   </div>
-                </div>
+                )}
+                {contract.fileSizeKb > 0 && (
+                  <div>
+                    <p className="text-sm text-gray-500">File Size</p>
+                    <p className="font-medium">{(contract.fileSizeKb / 1024).toFixed(2)} MB</p>
+                  </div>
+                )}
+                {contract.documentHash && (
+                  <div>
+                    <p className="text-sm text-gray-500">Document Hash</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-mono text-xs truncate max-w-[200px]">{contract.documentHash}</p>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => copyToClipboard(contract.documentHash)}
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -298,10 +355,6 @@ export function ContractDetail({ contract, basePath = '/dash', showOrg }: Contra
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Name</p>
-                  <p className="font-medium">{contract.signerName}</p>
-                </div>
                 <div>
                   <p className="text-sm text-gray-500">ID Type</p>
                   <p className="font-medium">{contract.signerIdType.replace('_', ' ')}</p>
@@ -385,13 +438,13 @@ export function ContractDetail({ contract, basePath = '/dash', showOrg }: Contra
               <CardContent>
                 <div className="space-y-2">
                   {contract.signaturePositions.map((pos, index) => (
-                    <div key={index} className="flex items-center gap-4 text-sm p-2 bg-gray-50">
+                    <div key={index} className="flex items-center gap-4 text-sm p-2 bg-muted/50 rounded-md">
                       <span className="font-medium">Page {pos.page}</span>
-                      <span className="text-gray-500">
-                        Position: ({Math.round(pos.x)}, {Math.round(pos.y)})
+                      <span className="text-muted-foreground">
+                        Position: ({(pos.x * 100).toFixed(1)}%, {(pos.y * 100).toFixed(1)}%)
                       </span>
-                      <span className="text-gray-500">
-                        Size: {pos.width}×{pos.height}
+                      <span className="text-muted-foreground">
+                        Size: {(pos.width * 100).toFixed(1)}% × {(pos.height * 100).toFixed(1)}%
                       </span>
                     </div>
                   ))}
@@ -408,11 +461,15 @@ export function ContractDetail({ contract, basePath = '/dash', showOrg }: Contra
               <CardTitle className="text-base">Timeline</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-0">
-                {contract.events.map((event) => (
-                  <TimelineEvent key={event.id} event={event} />
-                ))}
-              </div>
+              {contract.events.length > 0 ? (
+                <div className="space-y-0">
+                  {contract.events.map((event) => (
+                    <TimelineEvent key={event.id} event={event} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No events recorded</p>
+              )}
             </CardContent>
           </Card>
 

@@ -1,28 +1,50 @@
+import { useState, useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
 import { OrgSettingsForm } from '@/components/settings';
-import { currentOrganization } from '@/data';
-import type { OrgSettings } from '@/types';
+import { getOrgDetail, type OrgDetail } from '@/services/org-api';
+import { orgId } from '@/lib/auth';
 
 export default function SettingsPage() {
-  const settings: OrgSettings = {
-    orgName: currentOrganization.name,
-    orgLogo: currentOrganization.logoUrl,
-    timezone: currentOrganization.timezone,
-    sessionTtlHours: currentOrganization.sessionTtlHours,
-    maxFileSizeMb: currentOrganization.maxFileSizeMb,
-    webhookUrl: currentOrganization.webhookUrl,
-    emailNotifications: currentOrganization.emailNotifications,
-    notifyOnComplete: currentOrganization.notifyOnComplete,
-    notifyOnReject: currentOrganization.notifyOnReject,
-  };
+  const [org, setOrg] = useState<OrgDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleSave = (newSettings: OrgSettings) => {
-    console.log('Saving settings:', newSettings);
-    alert('Settings saved successfully!');
-  };
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      setIsLoading(true);
+      try {
+        if (!orgId) return;
+        const data = await getOrgDetail(orgId);
+        if (!cancelled) setOrg(data);
+      } catch {
+        // silently fail
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!org) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Settings not available</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl animate-fade-in">
-      <OrgSettingsForm settings={settings} onSave={handleSave} />
+      <OrgSettingsForm org={org} />
     </div>
   );
 }

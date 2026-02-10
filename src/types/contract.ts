@@ -1,6 +1,6 @@
 export type ContractStatus = 'CREATED' | 'SIGNED' | 'REJECTED' | 'ABANDONED' | 'EXPIRED';
 
-export type IdType = 'EMIRATES_ID' | 'PASSPORT' | 'GCC_ID';
+export type IdType = 'EMIRATES_ID' | 'PASSPORT' | 'GCC_ID' | 'UAE_KYC';
 
 export type KycStatus = 'PENDING' | 'SUCCESS' | 'FAILED';
 

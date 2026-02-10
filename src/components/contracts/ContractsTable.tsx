@@ -152,7 +152,7 @@ export function ContractsTable({ contracts, isLoading, filters, basePath = '/das
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate(`${basePath}/contracts/${row.original.id}`)}
+              onClick={() => navigate(`${basePath}/sessions/${row.original.id}`)}
             >
               <Eye className="h-4 w-4" />
             </Button>
@@ -247,7 +247,7 @@ export function ContractsTable({ contracts, isLoading, filters, basePath = '/das
               <TableRow
                 key={row.id}
                 className="cursor-pointer"
-                onClick={() => navigate(`${basePath}/contracts/${row.original.id}`)}
+                onClick={() => navigate(`${basePath}/sessions/${row.original.id}`)}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>

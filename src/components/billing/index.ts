@@ -1,2 +1,2 @@
-export { CurrentPlan } from './CurrentPlan';
-export { TopUpHistoryTable, UsageHistoryTable, InvoicesTable } from './InvoicesTable';
+export { CreditsOverview } from './CurrentPlan';
+export { TopUpHistoryTable, PricingTable, UsageBreakdownTable } from './InvoicesTable';

@@ -6,8 +6,8 @@ import ErrorPage from '@/pages/ErrorPage';
 // Dash pages
 import {
   DashboardPage,
-  ContractsPage,
-  ContractDetailPage,
+  SessionsPage,
+  SessionDetailPage,
   ApiKeysPage,
   UsersPage,
   BillingPage,
@@ -17,8 +17,8 @@ import {
 // Console pages
 import {
   ConsoleDashboard,
-  ConsoleContractsPage,
-  ConsoleContractDetailPage,
+  ConsoleSessionsPage,
+  ConsoleSessionDetailPage,
   OrganizationsPage,
   OrganizationDetailPage,
   OnboardClientPage,
@@ -44,12 +44,12 @@ export const router = createBrowserRouter([
         element: <DashboardPage />,
       },
       {
-        path: 'contracts',
-        element: <ContractsPage />,
+        path: 'sessions',
+        element: <SessionsPage />,
       },
       {
-        path: 'contracts/:id',
-        element: <ContractDetailPage />,
+        path: 'sessions/:id',
+        element: <SessionDetailPage />,
       },
       {
         path: 'api-keys',
@@ -80,12 +80,12 @@ export const router = createBrowserRouter([
         element: <ConsoleDashboard />,
       },
       {
-        path: 'contracts',
-        element: <ConsoleContractsPage />,
+        path: 'sessions',
+        element: <ConsoleSessionsPage />,
       },
       {
-        path: 'contracts/:id',
-        element: <ConsoleContractDetailPage />,
+        path: 'sessions/:id',
+        element: <ConsoleSessionDetailPage />,
       },
       {
         path: 'organizations',
