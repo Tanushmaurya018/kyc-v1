@@ -1,7 +1,7 @@
-const BASE_URL = import.meta.env.VITE_SERVE_API_BASE_URL;
+const BASE_URL = import.meta.env.VITE_SERVE_API_BASE_URL || "/api";
 
 function getAuthToken(): string | null {
-  return localStorage.getItem("auth_token") || import.meta.env.VITE_AUTH_TOKEN || null;
+  return localStorage.getItem("auth_token");
 }
 
 async function request<T>(

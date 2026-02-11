@@ -1,0 +1,32 @@
+stages:
+    - analysis
+    - build
+    - push
+
+include:
+  - component: $CI_SERVER_FQDN/ci-components/security/sonarqube@v1.0.5
+
+variables:
+    IMAGE_NAME: ${CI_REGISTRY}/${CI_PROJECT_NAME}
+    GIT_SUBMODULE_STRATEGY: recursive
+
+build-develop:
+    stage: build
+    only:
+        - develop
+    script:
+        - docker build -t $IMAGE_NAME:$CI_COMMIT_SHORT_SHA .
+        - echo "Develop build completed."
+        - docker rmi "$IMAGE_NAME:$CI_COMMIT_SHORT_SHA"
+
+build-and-push-tag:
+    stage: push
+    only:
+        - tags
+    script:
+        - TAG_NAME="${CI_COMMIT_TAG}"
+        - docker build -t "$IMAGE_NAME:$TAG_NAME" .
+        - echo "$CI_REGISTRY_PASSWORD" | docker login ${CI_REGISTRY} -u "$CI_REGISTRY_USER" --password-stdin;
+        - docker push "$IMAGE_NAME:$TAG_NAME";
+        - docker logout ${CI_REGISTRY};
+        - docker rmi "$IMAGE_NAME:$TAG_NAME"

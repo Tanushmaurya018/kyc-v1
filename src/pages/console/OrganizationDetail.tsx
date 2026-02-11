@@ -299,10 +299,8 @@ export default function OrganizationDetailPage() {
     );
   }
 
-  // Compute totals from balance (all null-safe)
-  const totalSessions = balance?.journeyCount?.totalCount
-    ? Object.values(balance.journeyCount.totalCount).reduce((a, b) => a + b, 0)
-    : null;
+  // Session count from the actual sessions API (source of truth)
+  const totalSessions = pagination?.total_items ?? null;
   const creditsAvailable = balance?.totalCreditsAvailable != null
     ? parseFloat(balance.totalCreditsAvailable)
     : null;

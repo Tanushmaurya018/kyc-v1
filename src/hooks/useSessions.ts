@@ -7,6 +7,7 @@ import {
   type SessionListItem,
   type SessionDetail,
   type SessionListParams,
+  type AnalyticsParams,
   type Pagination,
   type ConsoleDashboardResponse,
   type ClientDashboardResponse,
@@ -83,10 +84,12 @@ export function useSessionDetail(id: string | undefined) {
 
 // ── Console Dashboard hook ───────────────────────────────────────────
 
-export function useConsoleDashboard() {
+export function useConsoleDashboard(params: AnalyticsParams = {}) {
   const [data, setData] = useState<ConsoleDashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+
+  const paramsKey = JSON.stringify(params);
 
   useEffect(() => {
     let cancelled = false;
@@ -95,7 +98,7 @@ export function useConsoleDashboard() {
       setIsLoading(true);
       setError(null);
       try {
-        const res = await getConsoleDashboard();
+        const res = await getConsoleDashboard(params);
         if (!cancelled) setData(res);
       } catch (err) {
         if (!cancelled) setError(err as Error);
@@ -106,17 +109,20 @@ export function useConsoleDashboard() {
 
     fetch();
     return () => { cancelled = true; };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paramsKey]);
 
   return { data, isLoading, error };
 }
 
 // ── Client Dashboard hook ────────────────────────────────────────────
 
-export function useClientDashboard() {
+export function useClientDashboard(params: AnalyticsParams = {}) {
   const [data, setData] = useState<ClientDashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+
+  const paramsKey = JSON.stringify(params);
 
   useEffect(() => {
     let cancelled = false;
@@ -125,7 +131,7 @@ export function useClientDashboard() {
       setIsLoading(true);
       setError(null);
       try {
-        const res = await getClientDashboard();
+        const res = await getClientDashboard(params);
         if (!cancelled) setData(res);
       } catch (err) {
         if (!cancelled) setError(err as Error);
@@ -136,7 +142,8 @@ export function useClientDashboard() {
 
     fetch();
     return () => { cancelled = true; };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paramsKey]);
 
   return { data, isLoading, error };
 }

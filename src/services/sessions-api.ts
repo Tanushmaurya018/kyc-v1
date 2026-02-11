@@ -64,7 +64,7 @@ export interface SessionDetail extends SessionListItem {
 
 // ── Document fetcher (authenticated) ──────────────────────────────────
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api/dashboard";
 
 function getAuthToken(): string | null {
   return localStorage.getItem("auth_token") || import.meta.env.VITE_AUTH_TOKEN || null;
@@ -96,8 +96,6 @@ export interface SessionListParams {
   search?: string;
   status?: string[];
   org_id?: string;
-  /** Use /client-sessions endpoint instead of /sessions */
-  client?: boolean;
 }
 
 // ── API calls ─────────────────────────────────────────────────────────
@@ -116,9 +114,8 @@ export async function getSessions(
   if (params.org_id) query.set("org_id", params.org_id);
 
   const qs = query.toString();
-  const endpoint = params.client ? "/client-sessions" : "/sessions";
   return api.get<SessionListResponse>(
-    `${endpoint}${qs ? `?${qs}` : ""}`
+    `/sessions${qs ? `?${qs}` : ""}`
   );
 }
 
@@ -180,8 +177,21 @@ export interface ConsoleDashboardResponse {
   };
 }
 
-export async function getConsoleDashboard(): Promise<ConsoleDashboardResponse> {
-  return api.get<ConsoleDashboardResponse>(`/console-analytics`);
+export interface AnalyticsParams {
+  org_id?: string;
+  days?: number;
+}
+
+export async function getConsoleDashboard(
+  params: AnalyticsParams = {}
+): Promise<ConsoleDashboardResponse> {
+  const query = new URLSearchParams();
+  if (params.org_id) query.set("org_id", params.org_id);
+  if (params.days) query.set("days", String(params.days));
+  const qs = query.toString();
+  return api.get<ConsoleDashboardResponse>(
+    `/console-analytics${qs ? `?${qs}` : ""}`
+  );
 }
 
 // ── Client Dashboard ─────────────────────────────────────────────────
@@ -221,7 +231,15 @@ export interface ClientDashboardResponse {
   };
 }
 
-export async function getClientDashboard(): Promise<ClientDashboardResponse> {
-  return api.get<ClientDashboardResponse>(`/client-analytics`);
+export async function getClientDashboard(
+  params: AnalyticsParams = {}
+): Promise<ClientDashboardResponse> {
+  const query = new URLSearchParams();
+  if (params.org_id) query.set("org_id", params.org_id);
+  if (params.days) query.set("days", String(params.days));
+  const qs = query.toString();
+  return api.get<ClientDashboardResponse>(
+    `/client-analytics${qs ? `?${qs}` : ""}`
+  );
 }
 

@@ -9,9 +9,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
-  KeyRound,
   LogOut,
-  ChevronsUpDown
+  ChevronsUpDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProductSwitcher } from './ProductSwitcher';
@@ -23,9 +22,8 @@ import {
   PopoverContent,
   Separator,
 } from '@/components/ui';
-import { currentUser } from '@/data';
+import { clearTokens, getUser } from '@/lib/auth';
 import { useOrganizations } from '@/hooks';
-import { roleLabels } from '@/types/user';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -78,6 +76,7 @@ export function Sidebar({ collapsed, onToggle, isConsole }: SidebarProps) {
   const navigate = useNavigate();
   const { orgs } = useOrganizations();
   const navItems = isConsole ? consoleNavItems : dashNavItems;
+  const user = getUser();
 
   const isActive = (href: string) => {
     if (href === '/dash' || href === '/console') {
@@ -208,14 +207,14 @@ export function Sidebar({ collapsed, onToggle, isConsole }: SidebarProps) {
             )}>
               <Avatar className="h-9 w-9 flex-shrink-0">
                 <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                  {currentUser.name.split(' ').map(n => n[0]).join('')}
+                  {user?.name.split(' ').map(n => n[0]).join('') ?? '?'}
                 </AvatarFallback>
               </Avatar>
               {!collapsed && (
                 <>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{currentUser.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{roleLabels[currentUser.role]}</p>
+                    <p className="text-sm font-medium truncate">{user?.name ?? 'User'}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user?.role ?? ''}</p>
                   </div>
                   <ChevronsUpDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 </>
@@ -227,27 +226,20 @@ export function Sidebar({ collapsed, onToggle, isConsole }: SidebarProps) {
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
                   <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                    {currentUser.name.split(' ').map(n => n[0]).join('')}
+                    {user?.name.split(' ').map(n => n[0]).join('') ?? '?'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{currentUser.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{currentUser.email}</p>
-                  <p className="text-xs text-muted-foreground">{roleLabels[currentUser.role]}</p>
+                  <p className="text-sm font-semibold truncate">{user?.name ?? 'User'}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user?.email ?? ''}</p>
+                  <p className="text-xs text-muted-foreground">{user?.role ?? ''}</p>
                 </div>
               </div>
             </div>
             <Separator />
             <div className="p-1">
               <button
-                onClick={() => alert('Update password dialog')}
-                className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md hover:bg-accent transition-colors text-left"
-              >
-                <KeyRound className="h-4 w-4 text-muted-foreground" />
-                Update Password
-              </button>
-              <button
-                onClick={() => navigate('/login')}
+                onClick={() => { clearTokens(); navigate('/login'); }}
                 className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md hover:bg-accent transition-colors text-left text-destructive"
               >
                 <LogOut className="h-4 w-4" />

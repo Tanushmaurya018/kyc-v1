@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Layout } from '@/components/layout';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import LoginPage from '@/pages/Login';
 import ErrorPage from '@/pages/ErrorPage';
 
@@ -33,71 +34,77 @@ export const router = createBrowserRouter([
     path: '/login',
     element: <LoginPage />,
   },
-  // Client Dashboard routes (/dash)
+  // Protected routes
   {
-    path: '/dash',
-    element: <Layout mode="dash" />,
-    errorElement: <ErrorPage />,
+    element: <ProtectedRoute />,
     children: [
+      // Client Dashboard routes (/dash)
       {
-        index: true,
-        element: <DashboardPage />,
+        path: '/dash',
+        element: <Layout mode="dash" />,
+        errorElement: <ErrorPage />,
+        children: [
+          {
+            index: true,
+            element: <DashboardPage />,
+          },
+          {
+            path: 'sessions',
+            element: <SessionsPage />,
+          },
+          {
+            path: 'sessions/:id',
+            element: <SessionDetailPage />,
+          },
+          {
+            path: 'api-keys',
+            element: <ApiKeysPage />,
+          },
+          {
+            path: 'users',
+            element: <UsersPage />,
+          },
+          {
+            path: 'billing',
+            element: <BillingPage />,
+          },
+          {
+            path: 'settings',
+            element: <SettingsPage />,
+          },
+        ],
       },
+      // ICP Console routes (/console)
       {
-        path: 'sessions',
-        element: <SessionsPage />,
-      },
-      {
-        path: 'sessions/:id',
-        element: <SessionDetailPage />,
-      },
-      {
-        path: 'api-keys',
-        element: <ApiKeysPage />,
-      },
-      {
-        path: 'users',
-        element: <UsersPage />,
-      },
-      {
-        path: 'billing',
-        element: <BillingPage />,
-      },
-      {
-        path: 'settings',
-        element: <SettingsPage />,
-      },
-    ],
-  },
-  // ICP Console routes (/console)
-  {
-    path: '/console',
-    element: <Layout mode="console" />,
-    errorElement: <ErrorPage />,
-    children: [
-      {
-        index: true,
-        element: <ConsoleDashboard />,
-      },
-      {
-        path: 'sessions',
-        element: <ConsoleSessionsPage />,
-      },
-      {
-        path: 'sessions/:id',
-        element: <ConsoleSessionDetailPage />,
-      },
-      {
-        path: 'organizations',
-        element: <OrganizationsPage />,
-      },
-      {
-        path: 'organizations/:id',
-        element: <OrganizationDetailPage />,
-      },
-      {
-        path: 'onboard-client',
-        element: <OnboardClientPage />,
+        path: '/console',
+        element: <Layout mode="console" />,
+        errorElement: <ErrorPage />,
+        children: [
+          {
+            index: true,
+            element: <ConsoleDashboard />,
+          },
+          {
+            path: 'sessions',
+            element: <ConsoleSessionsPage />,
+          },
+          {
+            path: 'sessions/:id',
+            element: <ConsoleSessionDetailPage />,
+          },
+          {
+            path: 'organizations',
+            element: <OrganizationsPage />,
+          },
+          {
+            path: 'organizations/:id',
+            element: <OrganizationDetailPage />,
+          },
+          {
+            path: 'onboard-client',
+            element: <OnboardClientPage />,
+          },
+        ],
       },
     ],
   },

@@ -158,7 +158,7 @@ export default function DashboardPage() {
                       <span className="text-sm">Completion Rate</span>
                     </div>
                     <span className="font-semibold">
-                      {(data.stats.completion_rate * 100).toFixed(1)}%
+                      {data.stats.completion_rate.toFixed(1)}%
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -167,7 +167,7 @@ export default function DashboardPage() {
                       <span className="text-sm">KYC Pass Rate</span>
                     </div>
                     <span className="font-semibold">
-                      {(data.stats.kyc_pass_rate * 100).toFixed(1)}%
+                      {data.stats.kyc_pass_rate.toFixed(1)}%
                     </span>
                   </div>
                   <div className="flex items-center justify-between">

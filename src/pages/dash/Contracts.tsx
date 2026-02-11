@@ -16,7 +16,7 @@ import { getBackendStatesForStatus } from '@/lib/state-mapper';
 import type { ContractStatus } from '@/types';
 import type { SessionListParams } from '@/services/sessions-api';
 
-type SortField = 'created_at' | 'updated_at' | 'state';
+type SortField = 'created_at' | 'updated_at' | 'state' | 'org_name';
 
 const statusOptions: { value: ContractStatus; label: string }[] = [
   { value: 'CREATED', label: 'Created' },
@@ -44,7 +44,6 @@ export default function SessionsPage() {
     sort_order: sortOrder,
     ...(appliedSearch && { search: appliedSearch }),
     ...(backendStates.length > 0 && { status: backendStates }),
-    client: true,
   };
 
   const { sessions, pagination, isLoading } = useSessions(params);

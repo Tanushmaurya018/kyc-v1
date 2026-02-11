@@ -17,7 +17,7 @@ export function formatNumber(num: number): string {
 }
 
 export function formatPercentage(num: number): string {
-  return `${(num * 100).toFixed(1)}%`
+  return `${num.toFixed(1)}%`
 }
 
 export function truncate(str: string, length: number): string {

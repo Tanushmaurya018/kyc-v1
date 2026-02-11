@@ -1,13 +1,7 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const ENV_TOKEN = import.meta.env.VITE_AUTH_TOKEN;
-
-// Persist token to localStorage on first load
-if (ENV_TOKEN && !localStorage.getItem("auth_token")) {
-  localStorage.setItem("auth_token", ENV_TOKEN);
-}
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api/dashboard";
 
 function getAuthToken(): string | null {
-  return localStorage.getItem("auth_token") || ENV_TOKEN || null;
+  return localStorage.getItem("auth_token");
 }
 
 async function request<T>(
